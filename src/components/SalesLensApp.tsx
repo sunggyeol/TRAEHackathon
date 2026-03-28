@@ -112,6 +112,59 @@ export default function SalesLensApp() {
     dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'step', content, { stepNumber: step, totalSteps: total }) });
   };
 
+  const consumeSSE = async (
+    response: Response,
+    onEvent: (raw: string) => void,
+    timeoutMs = 30000
+  ) => {
+    if (!response.body) return;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    const readWithTimeout = async () => {
+      return await new Promise<ReadableStreamReadResult<Uint8Array>>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('STREAM_TIMEOUT')), timeoutMs);
+        reader.read().then(
+          (result) => {
+            clearTimeout(timer);
+            resolve(result);
+          },
+          (error) => {
+            clearTimeout(timer);
+            reject(error);
+          }
+        );
+      });
+    };
+
+    while (true) {
+      const { done, value } = await readWithTimeout();
+      if (done) {
+        buffer += decoder.decode();
+        break;
+      }
+
+      buffer += decoder.decode(value, { stream: true });
+
+      while (true) {
+        const newlineIndex = buffer.indexOf('\n');
+        if (newlineIndex < 0) break;
+
+        const line = buffer.slice(0, newlineIndex).trimEnd();
+        buffer = buffer.slice(newlineIndex + 1);
+
+        if (!line.startsWith('data: ')) continue;
+        onEvent(line.slice(6));
+      }
+    }
+
+    const tail = buffer.trim();
+    if (tail.startsWith('data: ')) {
+      onEvent(tail.slice(6));
+    }
+  };
+
   // Pending files that need LLM mapping (not in cache)
   const pendingFilesRef = useRef<{ parsed: ParsedFile; platform: string }[]>([]);
   const allCollectedRecordsRef = useRef<UnifiedRecord[]>([]);
@@ -237,9 +290,11 @@ export default function SalesLensApp() {
   }, []);
 
   const generateInsights = async (records: Parameters<typeof buildInsightPayload>[0]) => {
+    dispatch({ type: 'SET_STREAMING', streaming: true });
+    let msgId = '';
+    let insightText = '';
     try {
       const payload = buildInsightPayload(records);
-      dispatch({ type: 'SET_STREAMING', streaming: true });
 
       const response = await fetch('/api/agent', {
         method: 'POST',
@@ -248,41 +303,31 @@ export default function SalesLensApp() {
       });
 
       if (!response.ok || !response.body) {
-        dispatch({ type: 'SET_STREAMING', streaming: false });
+        dispatch({
+          type: 'ADD_MESSAGE',
+          message: createMessage('agent', 'error', t.noResponse),
+        });
         return;
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let insightText = '';
-      const msgId = `insight-${Date.now()}`;
+      msgId = `insight-${Date.now()}`;
 
       dispatch({
         type: 'ADD_MESSAGE',
         message: { id: msgId, role: 'agent', type: 'text', content: `🔍 ${t.analyzingData}`, timestamp: Date.now() },
       });
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      await consumeSSE(response, (data) => {
+        if (data === '[DONE]') return;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.text) {
+            insightText += parsed.text;
+            dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: insightText });
+          }
+        } catch {}
+      });
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
-
-        for (const line of lines) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.text) {
-              insightText += parsed.text;
-              dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: insightText });
-            }
-          } catch {}
-        }
-      }
-
-      // Parse insight items from the streamed text
       const items = insightText
         .split(/\n/)
         .filter(l => /^\d+\./.test(l.trim()))
@@ -293,13 +338,23 @@ export default function SalesLensApp() {
           type: 'ADD_MESSAGE',
           message: createMessage('agent', 'insight', '', { insightItems: items }),
         });
-        // Remove the streaming message
         dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: '' });
       }
-
-      dispatch({ type: 'SET_STREAMING', streaming: false });
     } catch (error) {
       console.error('[INSIGHTS]', error);
+      if (msgId) {
+        dispatch({
+          type: 'UPDATE_MESSAGE',
+          id: msgId,
+          content: insightText || t.noResponse,
+        });
+      } else {
+        dispatch({
+          type: 'ADD_MESSAGE',
+          message: createMessage('agent', 'error', t.noResponse),
+        });
+      }
+    } finally {
       dispatch({ type: 'SET_STREAMING', streaming: false });
     }
   };
@@ -330,35 +385,27 @@ export default function SalesLensApp() {
             }),
           });
 
-          if (response.ok && response.body) {
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
+          if (!response.ok || !response.body) {
+            dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: t.noResponse });
+          } else {
             let responseText = '';
-
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              const chunk = decoder.decode(value);
-              const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
-
-              for (const line of lines) {
-                const data = line.slice(6);
-                if (data === '[DONE]') continue;
-                try {
-                  const parsed = JSON.parse(data);
-                  if (parsed.text) {
-                    responseText += parsed.text;
-                    dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: responseText });
-                  }
-                } catch {}
-              }
-            }
+            await consumeSSE(response, (data) => {
+              if (data === '[DONE]') return;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.text) {
+                  responseText += parsed.text;
+                  dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: responseText });
+                }
+              } catch {}
+            });
           }
         } catch (error) {
           console.error('[CHAT WITH FILE]', error);
+          dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: t.errorOccurred });
+        } finally {
+          dispatch({ type: 'SET_STREAMING', streaming: false });
         }
-        dispatch({ type: 'SET_STREAMING', streaming: false });
       }
       
       await processFiles(files);
@@ -395,34 +442,23 @@ export default function SalesLensApp() {
           return;
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
         let responseText = '';
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
-
-          for (const line of lines) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.text) {
-                responseText += parsed.text;
-                dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: responseText });
-              }
-            } catch {}
-          }
-        }
+        await consumeSSE(response, (data) => {
+          if (data === '[DONE]') return;
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.text) {
+              responseText += parsed.text;
+              dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: responseText });
+            }
+          } catch {}
+        });
       } catch (error) {
         dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: t.errorOccurred });
+      } finally {
+        dispatch({ type: 'SET_STREAMING', streaming: false });
       }
-
-      dispatch({ type: 'SET_STREAMING', streaming: false });
       return;
     }
 
@@ -475,53 +511,37 @@ export default function SalesLensApp() {
         return;
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
+      await consumeSSE(response, (raw) => {
+        if (raw === '[DONE]') return;
+        try {
+          const evt = JSON.parse(raw);
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
-
-        for (const line of lines) {
-          const raw = line.slice(6);
-          if (raw === '[DONE]') continue;
-          try {
-            const evt = JSON.parse(raw);
-
-            if (evt.type === 'orchestrator') {
-              dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'step', `🤖 ${evt.agentCount}개 전문 에이전트 디스패치 중...`, { stepNumber: 1, totalSteps: evt.agentCount + 1 }) });
-            } else if (evt.type === 'agent-start') {
-              const msgId = `agent-${evt.agentId}-${Date.now()}`;
-              agentMsgIds[evt.agentId] = msgId;
-              agentTexts[evt.agentId] = '';
-              dispatch({ type: 'ADD_MESSAGE', message: { id: msgId, role: 'agent', type: 'text', content: `${evt.emoji} **${evt.name}** 분석 중...`, timestamp: Date.now() } });
-            } else if (evt.type === 'agent-delta') {
-              agentTexts[evt.agentId] = (agentTexts[evt.agentId] || '') + evt.text;
-              const msgId = agentMsgIds[evt.agentId];
-              if (msgId) {
-                dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: agentTexts[evt.agentId] });
-              }
-            } else if (evt.type === 'agent-done') {
-              // Agent completed, text is already streamed
-            } else if (evt.type === 'synthesizer-start') {
-              synthMsgId = `synth-${Date.now()}`;
-              dispatch({ type: 'ADD_MESSAGE', message: { id: synthMsgId, role: 'agent', type: 'text', content: '🧠 **종합 분석 에이전트** 결과를 통합하는 중...', timestamp: Date.now() } });
-            } else if (evt.type === 'synthesizer-delta') {
-              synthText += evt.text;
-              if (synthMsgId) {
-                dispatch({ type: 'UPDATE_MESSAGE', id: synthMsgId, content: synthText });
-              }
-            } else if (evt.type === 'synthesizer-done') {
-              // Done
-            } else if (evt.type === 'error') {
-              dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'error', evt.error) });
+          if (evt.type === 'orchestrator') {
+            dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'step', `${evt.agentCount}개 전문 에이전트 디스패치 중...`, { stepNumber: 1, totalSteps: evt.agentCount + 1 }) });
+          } else if (evt.type === 'agent-start') {
+            const msgId = `agent-${evt.agentId}-${Date.now()}`;
+            agentMsgIds[evt.agentId] = msgId;
+            agentTexts[evt.agentId] = '';
+            dispatch({ type: 'ADD_MESSAGE', message: { id: msgId, role: 'agent', type: 'text', content: `**${evt.name}** 분석 중...`, timestamp: Date.now() } });
+          } else if (evt.type === 'agent-delta') {
+            agentTexts[evt.agentId] = (agentTexts[evt.agentId] || '') + evt.text;
+            const msgId = agentMsgIds[evt.agentId];
+            if (msgId) {
+              dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: agentTexts[evt.agentId] });
             }
-          } catch {}
-        }
-      }
+          } else if (evt.type === 'synthesizer-start') {
+            synthMsgId = `synth-${Date.now()}`;
+            dispatch({ type: 'ADD_MESSAGE', message: { id: synthMsgId, role: 'agent', type: 'text', content: '**종합 분석 에이전트** 결과를 통합하는 중...', timestamp: Date.now() } });
+          } else if (evt.type === 'synthesizer-delta') {
+            synthText += evt.text;
+            if (synthMsgId) {
+              dispatch({ type: 'UPDATE_MESSAGE', id: synthMsgId, content: synthText });
+            }
+          } else if (evt.type === 'error') {
+            dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'error', evt.error) });
+          }
+        } catch {}
+      });
     } catch (error) {
       dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'error', 'Multi-agent 연결에 실패했습니다.') });
     }

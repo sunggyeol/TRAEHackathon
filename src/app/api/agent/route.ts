@@ -4,6 +4,14 @@ import { validateMappingResponse } from '@/lib/agent/mapper';
 import { NextResponse } from 'next/server';
 
 const anthropic = new Anthropic();
+const NO_EMOJI_RULE = '응답 시 이모지(emoji)를 절대 사용하지 마세요. 텍스트, 숫자, 표기호만 사용하세요.';
+const TOKEN_LIMITS = {
+  mapping: 8192,
+  insights: 4096,
+  chat: 4096,
+  multiAgentWorker: 2048,
+  multiAgentSynth: 4096,
+} as const;
 
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -45,7 +53,7 @@ async function handleMapping(body: {
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
+    max_tokens: TOKEN_LIMITS.mapping,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -79,7 +87,7 @@ async function handleInsightsStream(body: { data: string }) {
       try {
         const response = await anthropic.messages.create({
           model: 'claude-sonnet-4-6',
-          max_tokens: 1024,
+          max_tokens: TOKEN_LIMITS.insights,
           stream: true,
           messages: [{ role: 'user', content: prompt }],
         });
@@ -125,7 +133,7 @@ ${body.context ? `\n현재 데이터 컨텍스트:\n${body.context}` : ''}`;
       try {
         const response = await anthropic.messages.create({
           model: 'claude-sonnet-4-6',
-          max_tokens: 1024,
+          max_tokens: TOKEN_LIMITS.chat,
           stream: true,
           system: systemPrompt,
           messages: [{ role: 'user', content: body.message }],
@@ -236,8 +244,8 @@ async function handleMultiAgent(body: { workflow: string; context: string }) {
           emit({ type: 'agent-start', agentId: agent.id, name: agent.name, emoji: agent.emoji });
 
           const res = await anthropic.messages.create({
-            model: 'claude-sonnet-4-6', max_tokens: 512, stream: true,
-            system: agent.system,
+            model: 'claude-sonnet-4-6', max_tokens: TOKEN_LIMITS.multiAgentWorker, stream: true,
+            system: `${agent.system}\n${NO_EMOJI_RULE}`,
             messages: [{ role: 'user', content: agent.prompt(body.context) }],
           });
 
@@ -260,9 +268,9 @@ async function handleMultiAgent(body: { workflow: string; context: string }) {
 
         const synthInput = results.map(r => `[${r.name}의 분석]\n${r.result}`).join('\n\n');
         const synthRes = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6', max_tokens: 768, stream: true,
-          system: SYNTH_PROMPTS[body.workflow] || SYNTH_PROMPTS.comprehensive,
-          messages: [{ role: 'user', content: `다음은 각 전문 에이전트의 분석 결과입니다:\n\n${synthInput}\n\n이 결과를 종합하여 최종 분석을 제시하세요.` }],
+          model: 'claude-sonnet-4-6', max_tokens: TOKEN_LIMITS.multiAgentSynth, stream: true,
+          system: `${SYNTH_PROMPTS[body.workflow] || SYNTH_PROMPTS.comprehensive}\n${NO_EMOJI_RULE}`,
+          messages: [{ role: 'user', content: `다음은 각 전문 에이전트의 분석 결과입니다:\n\n${synthInput}\n\n이 결과를 종합하여 최종 분석을 제시하세요. 이모지는 절대 사용하지 마세요.` }],
         });
 
         for await (const ev of synthRes) {
