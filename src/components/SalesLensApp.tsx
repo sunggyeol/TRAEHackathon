@@ -6,7 +6,7 @@ import type { AppState, AppAction, ChatMessage, ParsedFile, ColumnMapping, Unifi
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import { parseFile } from '@/lib/parser/fileParser';
-import { isFileDuplicate, clearDuplicateCache } from '@/lib/agent/fingerprint';
+// fingerprint imports removed — duplicate detection disabled (per-thread uploads)
 import { detectPlatform } from '@/lib/agent/mapper';
 import { applyMapping, buildInsightPayload } from '@/lib/transform';
 import { getMockData } from '@/lib/mock/generateMockData';
@@ -95,12 +95,10 @@ export default function SalesLensApp() {
   const handleNewSession = () => {
     dispatch({ type: 'RESET' });
     setCurrentSessionId(null);
-    clearDuplicateCache();
   };
 
   const handleSelectSession = (session: DashboardSession) => {
     dispatch({ type: 'RESET' });
-    clearDuplicateCache();
     setCurrentSessionId(session.id);
     dispatch({ type: 'SET_RECORDS', records: session.records });
     // Restore messages
@@ -179,11 +177,6 @@ export default function SalesLensApp() {
 
     for (const file of files) {
       fileIndex++;
-      const isDup = await isFileDuplicate(file);
-      if (isDup) {
-        dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'error', t.fileDuplicate(file.name)) });
-        continue;
-      }
 
       // 대시보드 상태가 아닐 때만 PARSING 단계로 전환
       if (stateRef.current.phase !== 'DASHBOARD') {
@@ -365,6 +358,9 @@ export default function SalesLensApp() {
   const handleSend = async (text: string, files?: File[]) => {
     // If files are attached, process them
     if (files && files.length > 0) {
+      // Save file references before any async work
+      const filesToProcess = [...files];
+
       if (text) {
         dispatch({ type: 'ADD_MESSAGE', message: createMessage('user', 'text', text) });
 
@@ -377,7 +373,7 @@ export default function SalesLensApp() {
         });
 
         try {
-          const fileNames = files.map(f => f.name).join(', ');
+          const fileNames = filesToProcess.map(f => f.name).join(', ');
           const response = await fetch('/api/agent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -410,8 +406,8 @@ export default function SalesLensApp() {
           dispatch({ type: 'SET_STREAMING', streaming: false });
         }
       }
-      
-      await processFiles(files);
+
+      await processFiles(filesToProcess);
       return;
     }
 

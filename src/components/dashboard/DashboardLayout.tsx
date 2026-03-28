@@ -7,7 +7,7 @@ import RevenueOverview from './RevenueOverview';
 import FeeAnalysis from './FeeAnalysis';
 import ProductProfit from './ProductProfit';
 import SalesTrend from './SalesTrend';
-import DataHealth from './DataHealth';
+import RiskDiagnosis from './RiskDiagnosis';
 import { getKPIData } from '@/lib/charts';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -77,7 +77,7 @@ export default function DashboardLayout({ records, activeTab, onTabChange, isPre
         {activeTab === 1 && <FeeAnalysis records={records} loading={loading} />}
         {activeTab === 2 && <ProductProfit records={records} loading={loading} />}
         {activeTab === 3 && <SalesTrend records={records} loading={loading} />}
-        {activeTab === 4 && <DataHealth records={records} loading={loading} />}
+        {activeTab === 4 && <RiskDiagnosis records={records} loading={loading} />}
       </div>
     </div>
   );
