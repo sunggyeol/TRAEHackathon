@@ -138,7 +138,7 @@ export function getSankeyOptions(data: { source: string; target: string; value: 
 
   return {
     ...baseOptions,
-    height: '400px',
+    height: '520px',
     alluvial: {
       nodes,
       nodeAlignment: 'left' as const,

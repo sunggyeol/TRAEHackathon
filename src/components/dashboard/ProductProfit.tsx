@@ -52,19 +52,19 @@ export default function ProductProfit({ records, loading }: ProductProfitProps) 
               <td style={{ padding: '10px 16px' }}>
                 <PlatformLogo platform={p.platform} size={12} />
               </td>
-              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', color: 'var(--text-primary)' }}>
+              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', whiteSpace: 'nowrap' as const, color: 'var(--text-primary)' }}>
                 {formatCurrency(p.revenue, false, locale)}
               </td>
-              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', whiteSpace: 'nowrap' as const, color: 'var(--text-secondary)' }}>
                 {formatCurrency(p.fees, false, locale)}
               </td>
-              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', color: p.feeRate > 15 ? '#CD4246' : p.feeRate > 10 ? '#C87619' : '#238551' }}>
+              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', whiteSpace: 'nowrap' as const, color: p.feeRate > 15 ? '#CD4246' : p.feeRate > 10 ? '#C87619' : '#238551' }}>
                 {formatPercent(p.feeRate)}
               </td>
-              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', color: 'var(--text-primary)' }}>
+              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', whiteSpace: 'nowrap' as const, color: 'var(--text-primary)' }}>
                 {formatCurrency(p.settlement, false, locale)}
               </td>
-              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+              <td style={{ padding: '10px 16px', textAlign: 'right', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.8125rem', whiteSpace: 'nowrap' as const, color: 'var(--text-secondary)' }}>
                 {p.count.toLocaleString()}
               </td>
             </tr>

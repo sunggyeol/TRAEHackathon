@@ -824,7 +824,7 @@ html, body {
 
 .full-width-chart {
   background: var(--bg-base); border: 1px solid var(--border-subtle);
-  padding: 16px 20px; margin-bottom: 20px;
+  padding: 16px 20px; margin-bottom: 20px; overflow: visible;
   .chart-title { font-size: 0.6875rem; color: var(--text-tertiary); margin-bottom: 12px; font-weight: 500; }
 }
 

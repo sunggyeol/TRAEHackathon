@@ -54,7 +54,7 @@ export default function FeeAnalysis({ records, loading }: FeeAnalysisProps) {
 
   return (
     <div>
-      <div className="full-width-chart">
+      <div className="full-width-chart" style={{ paddingBottom: '32px' }}>
         <div className="chart-title">{t.chartFeeFlow}</div>
         {sankeyData.length > 0 ? (
           <AlluvialChart data={sankeyData} options={getSankeyOptions(sankeyData, locale)} />
