@@ -6,7 +6,7 @@ export const translations = {
     appDescription: '쿠팡, 네이버, 지마켓 정산 파일을 AI가 자동으로 분석합니다',
 
     // Landing
-    landingSubtitle: '정산 파일을 업로드하면 AI가 자동으로 매핑하고 분석합니다',
+    landingSubtitle: '이커머스 정산 파일을 업로드하면 멀티 에이전트 AI가 플랫폼을 식별하고 통합 대시보드를 생성합니다',
     templateRevenue: '매출 분석',
     templateRevenueDesc: '플랫폼별 매출 현황 파악',
     templateFees: '수수료 비교',
@@ -125,7 +125,7 @@ export const translations = {
   en: {
     appDescription: 'AI automatically analyzes settlement files from Coupang, Naver, and Gmarket',
 
-    landingSubtitle: 'Upload settlement files and AI will automatically map and analyze them',
+    landingSubtitle: 'Upload settlement files and multi-agent AI will automatically map columns and deliver unified analytics',
     templateRevenue: 'Revenue Analysis',
     templateRevenueDesc: 'Revenue overview by platform',
     templateFees: 'Fee Comparison',

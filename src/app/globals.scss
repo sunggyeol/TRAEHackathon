@@ -383,7 +383,48 @@ html, body {
     .wm-bridge { font-weight: 600; color: var(--accent); }
   }
 
-  .landing-subtitle { font-size: 0.875rem; color: var(--text-tertiary); line-height: 1.7; max-width: 380px; }
+  .landing-subtitle { font-size: 0.875rem; color: var(--text-tertiary); line-height: 1.7; max-width: 600px; white-space: nowrap; }
+
+  // Core feature pills
+  .landing-features {
+    display: flex; flex-direction: column; gap: 6px; width: 100%;
+  }
+
+  .feature-pill {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; background: var(--bg-surface);
+    border: 1px solid var(--border-subtle); text-align: left;
+
+    .feature-pill-icon {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--accent-muted); color: var(--accent); flex-shrink: 0;
+    }
+
+    .feature-pill-text {
+      display: flex; flex-direction: column; gap: 1px;
+    }
+
+    .feature-pill-title {
+      font-size: 0.75rem; font-weight: 600; color: var(--text-primary);
+    }
+
+    .feature-pill-desc {
+      font-size: 0.6875rem; color: var(--text-tertiary);
+    }
+  }
+
+  // Examples section
+  .landing-examples-section {
+    display: flex; flex-direction: column; gap: 8px; width: 100%;
+  }
+
+  .landing-section-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.6875rem; font-weight: 500; color: var(--text-disabled);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0 2px;
+  }
 
   .landing-templates { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
 
