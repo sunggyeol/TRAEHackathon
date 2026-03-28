@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Icon } from '@blueprintjs/core';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
@@ -126,6 +126,7 @@ export default function ChatInput({ onSend, disabled, placeholder, compact }: Ch
           multiple
           hidden
           onChange={handleFileChange}
+          suppressHydrationWarning
         />
         <input
           value={text}
@@ -133,6 +134,7 @@ export default function ChatInput({ onSend, disabled, placeholder, compact }: Ch
           onKeyDown={handleKeyDown}
           placeholder={placeholder || t.inputPlaceholder}
           disabled={disabled}
+          suppressHydrationWarning
         />
         <button
           onClick={handleSubmit}

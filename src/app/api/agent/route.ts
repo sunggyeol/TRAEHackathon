@@ -5,6 +5,8 @@ import { NextResponse } from 'next/server';
 
 const anthropic = new Anthropic();
 const NO_EMOJI_RULE = '응답 시 이모지(emoji)를 절대 사용하지 마세요. 텍스트, 숫자, 표기호만 사용하세요.';
+const DEFAULT_MODEL = 'claude-sonnet-4-6';
+const MODEL = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL;
 const TOKEN_LIMITS = {
   mapping: 8192,
   insights: 4096,
@@ -52,7 +54,7 @@ async function handleMapping(body: {
   console.log('[MAPPING] Sending prompt to Claude...');
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: MODEL,
     max_tokens: TOKEN_LIMITS.mapping,
     messages: [{ role: 'user', content: prompt }],
   });
@@ -86,7 +88,7 @@ async function handleInsightsStream(body: { data: string }) {
     async start(controller) {
       try {
         const response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6',
+          model: MODEL,
           max_tokens: TOKEN_LIMITS.insights,
           stream: true,
           messages: [{ role: 'user', content: prompt }],
@@ -132,7 +134,7 @@ ${body.context ? `\n현재 데이터 컨텍스트:\n${body.context}` : ''}`;
     async start(controller) {
       try {
         const response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6',
+          model: MODEL,
           max_tokens: TOKEN_LIMITS.chat,
           stream: true,
           system: systemPrompt,
@@ -220,10 +222,10 @@ const WORKFLOWS: Record<string, AgentDef[]> = {
 };
 
 const SYNTH_PROMPTS: Record<string, string> = {
-  comprehensive: '당신은 여러 전문 에이전트의 분석 결과를 종합하는 수석 분석가입니다. 각 에이전트의 핵심 발견을 통합하여 실행 가능한 인사이트 3가지를 도출하세요. 번호를 매기고, 구체적인 수치를 포함하세요. 응답 시 이모지 사용을 엄격히 금지하며, 깔끔하고 간결한 마크다운(bold, list 등)만 사용하세요. 한국어로 답변하세요.',
-  optimization: '당신은 여러 전문 에이전트의 최적화 제안을 종합하는 전략가입니다. 각 에이전트의 제안을 우선순위별로 정리하고, 예상 효과를 합산하세요. 실행 로드맵 형태로 3가지 액션 아이템을 제시하세요. 응답 시 이모지 사용을 엄격히 금지하며, 깔끔하고 간결한 마크다운(bold, list 등)만 사용하세요. 한국어로 답변하세요.',
-  risk: '당신은 여러 리스크 에이전트의 진단 결과를 종합하는 리스크 관리자입니다. 각 리스크의 심각도(높음/중간/낮음)를 평가하고, 즉시 조치가 필요한 항목을 식별하세요. 리스크 매트릭스 형태로 정리하세요. 응답 시 이모지 사용을 엄격히 금지하며, 깔끔하고 간결한 마크다운(bold, list 등)만 사용하세요. 한국어로 답변하세요.',
-  unify: '당신은 여러 에이전트의 데이터 검증 결과를 종합하여 통합 파일 생성 보고서를 작성하는 AI입니다. 스키마 검증, 중복 탐지, 포맷 제안을 종합하여 최종 통합 파일의 품질 리포트를 작성하세요. 총 레코드 수, 플랫폼별 비중, 데이터 품질 점수(100점 만점)를 포함하세요. 응답 시 이모지 사용을 엄격히 금지하며, 깔끔하고 간결한 마크다운(bold, list 등)만 사용하세요. 마지막에 "통합 파일이 준비되었습니다. 다운로드 버튼을 클릭하세요."로 마무리하세요. 한국어로 답변하세요.',
+  comprehensive: '당신은 여러 전문 에이전트의 분석 결과를 종합하는 수석 분석가입니다. 각 에이전트의 핵심 발견을 통합하여 실행 가능한 인사이트 3가지를 도출하세요. 번호를 매기고, 구체적인 수치를 포함하세요. 응답 시 이모지 사용을 엄격히 금지하며, 볼드나 리스트 등의 마크다운 문법도 사용하지 마세요. 한국어로 답변하세요.',
+  optimization: '당신은 여러 전문 에이전트의 최적화 제안을 종합하는 전략가입니다. 각 에이전트의 제안을 우선순위별로 정리하고, 예상 효과를 합산하세요. 실행 로드맵 형태로 3가지 액션 아이템을 제시하세요. 응답 시 이모지 사용을 엄격히 금지하며, 볼드나 리스트 등의 마크다운 문법도 사용하지 마세요. 한국어로 답변하세요.',
+  risk: '당신은 여러 리스크 에이전트의 진단 결과를 종합하는 리스크 관리자입니다. 각 리스크의 심각도(높음/중간/낮음)를 평가하고, 즉시 조치가 필요한 항목을 식별하세요. 리스크 매트릭스 형태로 정리하세요. 응답 시 이모지 사용을 엄격히 금지하며, 볼드나 리스트 등의 마크다운 문법도 사용하지 마세요. 한국어로 답변하세요.',
+  unify: '당신은 여러 에이전트의 데이터 검증 결과를 종합하여 통합 파일 생성 보고서를 작성하는 AI입니다. 스키마 검증, 중복 탐지, 포맷 제안을 종합하여 최종 통합 파일의 품질 리포트를 작성하세요. 총 레코드 수, 플랫폼별 비중, 데이터 품질 점수(100점 만점)를 포함하세요. 응답 시 이모지 사용을 엄격히 금지하며, 볼드나 리스트 등의 마크다운 문법도 사용하지 마세요. 마지막에 "통합 파일이 준비되었습니다. 다운로드 버튼을 클릭하세요."로 마무리하세요. 한국어로 답변하세요.',
 };
 
 async function handleMultiAgent(body: { workflow: string; context: string }) {
@@ -244,7 +246,7 @@ async function handleMultiAgent(body: { workflow: string; context: string }) {
           emit({ type: 'agent-start', agentId: agent.id, name: agent.name, emoji: agent.emoji });
 
           const res = await anthropic.messages.create({
-            model: 'claude-sonnet-4-6', max_tokens: TOKEN_LIMITS.multiAgentWorker, stream: true,
+            model: MODEL, max_tokens: TOKEN_LIMITS.multiAgentWorker, stream: true,
             system: `${agent.system}\n${NO_EMOJI_RULE}`,
             messages: [{ role: 'user', content: agent.prompt(body.context) }],
           });
@@ -268,7 +270,7 @@ async function handleMultiAgent(body: { workflow: string; context: string }) {
 
         const synthInput = results.map(r => `[${r.name}의 분석]\n${r.result}`).join('\n\n');
         const synthRes = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6', max_tokens: TOKEN_LIMITS.multiAgentSynth, stream: true,
+          model: MODEL, max_tokens: TOKEN_LIMITS.multiAgentSynth, stream: true,
           system: `${SYNTH_PROMPTS[body.workflow] || SYNTH_PROMPTS.comprehensive}\n${NO_EMOJI_RULE}`,
           messages: [{ role: 'user', content: `다음은 각 전문 에이전트의 분석 결과입니다:\n\n${synthInput}\n\n이 결과를 종합하여 최종 분석을 제시하세요. 이모지는 절대 사용하지 마세요.` }],
         });

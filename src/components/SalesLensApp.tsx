@@ -185,7 +185,10 @@ export default function SalesLensApp() {
         continue;
       }
 
-      dispatch({ type: 'SET_PHASE', phase: 'PARSING' });
+      // 대시보드 상태가 아닐 때만 PARSING 단계로 전환
+      if (stateRef.current.phase !== 'DASHBOARD') {
+        dispatch({ type: 'SET_PHASE', phase: 'PARSING' });
+      }
 
       try {
         // Parse
