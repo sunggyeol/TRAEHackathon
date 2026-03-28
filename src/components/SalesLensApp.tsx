@@ -132,7 +132,6 @@ export default function SalesLensApp() {
         continue;
       }
 
-      dispatch({ type: 'ADD_MESSAGE', message: createMessage('user', 'text', t.fileAttached(file.name)) });
       dispatch({ type: 'SET_PHASE', phase: 'PARSING' });
 
       try {
@@ -527,7 +526,30 @@ export default function SalesLensApp() {
       dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'error', 'Multi-agent 연결에 실패했습니다.') });
     }
 
+    // For unify workflow, trigger CSV download after agents complete
+    if (workflow === 'unify' && state.records.length > 0) {
+      downloadUnifiedCSV(state.records);
+    }
+
     dispatch({ type: 'SET_STREAMING', streaming: false });
+  };
+
+  const downloadUnifiedCSV = (records: UnifiedRecord[]) => {
+    const headers = ['platform', 'order_id', 'order_date', 'product_name', 'option', 'quantity', 'sales_amount', 'payment_amount', 'discount', 'shipping_fee', 'commission', 'settlement', 'category'];
+    const rows = records.map(r => headers.map(h => {
+      const val = r[h as keyof UnifiedRecord];
+      if (val === undefined || val === null) return '';
+      const str = String(val);
+      return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
+    }).join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SalesLens_통합정산_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleBackToChat = () => {
@@ -616,6 +638,9 @@ export default function SalesLensApp() {
             </button>
             <button className="action-chip" onClick={() => handleMultiAgent('risk', '리스크 진단')} disabled={state.isStreaming}>
               <Icon icon="warning-sign" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 리스크 진단
+            </button>
+            <button className="action-chip" onClick={() => handleMultiAgent('unify', '통합 파일 생성')} disabled={state.isStreaming}>
+              <Icon icon="merge-columns" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 통합 파일 생성
             </button>
           </div>
           <ChatInput
