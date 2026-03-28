@@ -526,15 +526,20 @@ export default function SalesLensApp() {
       dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'error', 'Multi-agent 연결에 실패했습니다.') });
     }
 
-    // For unify workflow, trigger CSV download after agents complete
-    if (workflow === 'unify' && state.records.length > 0) {
-      downloadUnifiedCSV(state.records);
+    // For unify workflow, show download button
+    if (workflow === 'unify' && stateRef.current.records.length > 0) {
+      dispatch({
+        type: 'ADD_MESSAGE',
+        message: createMessage('agent', 'action', '', { templates: ['__download_csv__'] }),
+      });
     }
 
     dispatch({ type: 'SET_STREAMING', streaming: false });
   };
 
-  const downloadUnifiedCSV = (records: UnifiedRecord[]) => {
+  const downloadUnifiedCSV = () => {
+    const records = stateRef.current.records;
+    if (records.length === 0) return;
     const headers = ['platform', 'order_id', 'order_date', 'product_name', 'option', 'quantity', 'sales_amount', 'payment_amount', 'discount', 'shipping_fee', 'commission', 'settlement', 'category'];
     const rows = records.map(r => headers.map(h => {
       const val = r[h as keyof UnifiedRecord];
@@ -591,7 +596,7 @@ export default function SalesLensApp() {
           ) : (
             <div className="chat-messages">
               {state.messages.filter(m => m.content || m.type !== 'text').map(m => (
-                <ChatMessageComp key={m.id} message={m} />
+                <ChatMessageComp key={m.id} message={m} onAction={(a) => { if (a === 'download_csv') downloadUnifiedCSV(); }} />
               ))}
               <div ref={messagesEndRef} />
             </div>
@@ -625,7 +630,7 @@ export default function SalesLensApp() {
           </div>
           <div className="sidebar-messages">
             {state.messages.filter(m => m.content || m.type !== 'text').slice(-20).map(m => (
-              <ChatMessageComp key={m.id} message={m} />
+              <ChatMessageComp key={m.id} message={m} onAction={(a) => { if (a === 'download_csv') downloadUnifiedCSV(); }} />
             ))}
             <div ref={messagesEndRef} />
           </div>

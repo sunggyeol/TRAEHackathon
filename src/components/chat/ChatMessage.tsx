@@ -82,7 +82,7 @@ function MessageAvatar({ role }: { role: 'user' | 'agent' }) {
   );
 }
 
-export default function ChatMessage({ message }: { message: ChatMessageType }) {
+export default function ChatMessage({ message, onAction }: { message: ChatMessageType; onAction?: (action: string) => void }) {
   const { t } = useLanguage();
   const isUser = message.role === 'user';
 
@@ -156,6 +156,22 @@ export default function ChatMessage({ message }: { message: ChatMessageType }) {
           <div className="chat-bubble--agent">{message.content}</div>
           <MappingTable mappings={message.data.mappings} />
         </div>
+      </div>
+    );
+  }
+
+  // Download button (from unify workflow)
+  if (message.type === 'action' && message.data?.templates?.includes('__download_csv__')) {
+    return (
+      <div className="msg-row msg-row--agent">
+        <MessageAvatar role="agent" />
+        <button
+          className="download-btn"
+          onClick={() => onAction?.('download_csv')}
+        >
+          <Icon icon="download" size={16} />
+          통합 정산 파일 다운로드 (.csv)
+        </button>
       </div>
     );
   }

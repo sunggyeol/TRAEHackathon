@@ -8,7 +8,7 @@ import "@blueprintjs/core/lib/css/blueprint.css";
 import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 
 export const metadata: Metadata = {
-  title: "SalesLens - AI 이커머스 정산 분석",
+  title: "SalesLens",
   description: 'AI-powered settlement file analysis for Coupang, Naver, and Gmarket',
 };
 

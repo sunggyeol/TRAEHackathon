@@ -104,9 +104,10 @@ export function getDonutOptions(locale: Locale = 'ko') {
   };
 }
 
-export function getAreaChartOptions() {
+export function getAreaChartOptions(locale: Locale = 'ko') {
   return {
     ...baseOptions,
+    color: { scale: getPlatformColors(locale) },
     axes: {
       bottom: { mapsTo: 'date', scaleType: ScaleTypes.TIME },
       left: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR },

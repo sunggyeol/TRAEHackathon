@@ -30,7 +30,7 @@ export default function RevenueOverview({ records, loading }: RevenueOverviewPro
   const donutData = getRevenueByPlatform(records, locale);
   const platforms = [...new Set(records.map(r => r.platform))];
 
-  const areaOpts = { ...getAreaChartOptions(), legend: { enabled: false } };
+  const areaOpts = { ...getAreaChartOptions(locale), legend: { enabled: false } };
   const donutOpts = { ...getDonutOptions(locale), legend: { enabled: false } };
 
   return (
