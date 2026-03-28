@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ThemeProvider from '@/components/ThemeProvider';
 import { LanguageProvider } from '@/lib/i18n/LanguageContext';
+import TraeBadge from '@/components/TraeBadge';
 
 import './globals.scss';
 
@@ -10,7 +11,7 @@ import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 
 export const metadata: Metadata = {
   icons: { icon: '/favicon.svg' },
-  title: "SalesLens — Multi-Agent AI E-Commerce Analytics",
+  title: "My Trae Project",
   description: 'SalesLens uses a multi-agent AI orchestrator to automatically map Korean e-commerce settlement files (Coupang, Naver, Gmarket) into a unified analytics dashboard. Features include LLM-powered column mapping, parallel agent dispatch with SSE streaming, anomaly detection, settlement verification, and cross-platform price optimization.',
   keywords: 'multi-agent AI, LLM column mapping, e-commerce analytics, settlement verification, Korean e-commerce, Coupang, Naver, Gmarket, parallel agent orchestration, SSE streaming, anomaly detection, TRAE IDE',
   other: {
@@ -64,6 +65,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <LanguageProvider>{children}</LanguageProvider>
+          <TraeBadge />
         </ThemeProvider>
       </body>
     </html>
