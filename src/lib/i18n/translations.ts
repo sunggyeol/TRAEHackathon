@@ -1,0 +1,233 @@
+export type Locale = 'ko' | 'en';
+
+export const translations = {
+  ko: {
+    // Layout
+    appDescription: '쿠팡, 네이버, 지마켓 정산 파일을 AI가 자동으로 분석합니다',
+
+    // Landing
+    landingSubtitle: '정산 파일을 업로드하면 AI가 자동으로 매핑하고 분석합니다',
+    templateRevenue: '매출 분석',
+    templateRevenueDesc: '플랫폼별 매출 현황 파악',
+    templateFees: '수수료 비교',
+    templateFeesDesc: '플랫폼간 수수료율 비교',
+    templateProduct: '상품별 수익성',
+    templateProductDesc: '상품별 마진 분석',
+    templateTrend: '추세 분석',
+    templateTrendDesc: '매출 추이 및 트렌드',
+    orDivider: '또는',
+    uploadHint: '내 정산 파일을 첨부하여 실제 데이터 분석',
+    downloadSample: '예시 정산 파일 다운로드',
+    sampleCoupang: '쿠팡 예시 파일',
+    sampleNaver: '스마트스토어 예시 파일',
+    sampleGmarket: '지마켓 예시 파일',
+
+    // Chat input
+    inputPlaceholder: '메시지를 입력하거나 파일을 첨부하세요...',
+    ariaAttach: '파일 첨부',
+    ariaSend: '전송',
+
+    // Chat messages
+    fileMetaRows: '행',
+    fileMetaCols: '열',
+    mappingSourceCol: '소스 컬럼',
+    mappingTargetField: '대상 필드',
+    mappingConfidence: '신뢰도',
+    insightHeader: 'AI가 발견한 인사이트',
+
+    // SalesLensApp messages
+    fileDuplicate: (name: string) => `${name}은 이미 업로드한 파일입니다.`,
+    fileAttached: (name: string) => `파일 첨부: ${name}`,
+    stepEncoding: '파일 인코딩 감지 중...',
+    stepPlatform: '플랫폼 감지 중...',
+    stepFingerprint: '컬럼 핑거프린트 생성 중...',
+    stepMapping: 'AI가 컬럼 매핑 분석 중...',
+    stepTransform: '데이터 변환 중...',
+    stepDone: '대시보드 준비완료!',
+    cacheHitMessage: '이전 매핑을 자동으로 적용합니다.',
+    mappingApiError: '매핑 API 호출 실패',
+    mappingResult: '컬럼 매핑 결과입니다. 확인 후 진행해주세요.',
+    templatePrompt: '어떤 분석을 원하시나요?',
+    templateOptions: ['매출 분석', '수수료 비교', '상품별 수익성', '전체 분석'],
+    fileProcessError: '파일 처리 중 오류가 발생했습니다.',
+    analyzingData: '데이터를 분석하고 있습니다...',
+    noResponse: '응답을 받을 수 없습니다.',
+    errorOccurred: '오류가 발생했습니다.',
+    uploadFirst: '파일을 먼저 첨부해주세요. 버튼을 클릭하거나 파일을 드래그앤드롭 하세요.',
+    confirmButton: '확인하고 대시보드 생성',
+    previewMessage: '샘플 데이터로 대시보드를 미리 보고 있습니다. 실제 정산 파일을 첨부하면 내 데이터로 분석합니다.',
+    chipAnalysisPrompt: (text: string) => `"${text}" 분석을 시작하려면 정산 파일을 먼저 첨부해주세요.`,
+    sidebarTitle: '분석 에이전트',
+    chipAddFile: '매출 추이 분석',
+    chipFeeCompare: '수수료 비교',
+    chipTopProfit: '수익성 TOP 5',
+    sidebarPlaceholder: '질문하거나 파일을 추가하세요...',
+
+    // Dashboard
+    tabRevenue: '매출',
+    tabFees: '수수료',
+    tabProduct: '상품',
+    tabTrend: '추이',
+    goBack: '돌아가기',
+    previewLabel: '샘플 데이터 미리보기',
+    analyzeMyFile: '내 파일로 분석하기',
+
+    // KPI
+    kpiTotalRevenue: '총 매출',
+    kpiOrders: '주문 수',
+    kpiOrderUnit: '건',
+    kpiAvgOrder: '평균 주문금액',
+    kpiTotalFeeRate: '총 수수료율',
+    kpiSettlement: (value: string) => `정산액 ${value}`,
+
+    // Charts
+    chartDailyRevenue: '일별 매출 추이',
+    chartPlatformShare: '플랫폼별 매출 비중',
+    chartNoDateData: '추이를 표시할 날짜 데이터가 없습니다',
+    chartNoData: '데이터가 없습니다',
+    chartFeeFlow: '수수료 흐름 (매출 → 비용 → 순이익)',
+    chartNoFeeData: '수수료 데이터가 없습니다',
+    chartFeeRateByPlatform: '플랫폼별 수수료율 (%)',
+    chartDonutCenter: '매출 비중',
+    chartDailySales: '일별 매출',
+    chartNoTrendData: '추이를 표시할 날짜 데이터가 충분하지 않습니다',
+    chartNoTabData: '이 탭에 표시할 데이터가 없습니다',
+
+    // Product table
+    colProductName: '상품명',
+    colPlatform: '플랫폼',
+    colRevenue: '매출',
+    colTotalFees: '총 수수료',
+    colFeeRate: '수수료율',
+    colSettlement: '정산액',
+    colQuantity: '수량',
+
+    // Platform names
+    platformCoupang: '쿠팡',
+    platformNaver: '네이버',
+    platformGmarket: '지마켓',
+
+    // Sankey
+    sankeyCommission: '판매수수료',
+    sankeyShipping: '배송비',
+    sankeyDiscount: '할인',
+    sankeyNetProfit: '순이익',
+
+    // Currency
+    currencyEok: (v: string) => `${v}억원`,
+    currencyMan: (v: string) => `${v}만원`,
+    currencyWon: (v: string) => `${v}원`,
+
+    // Confirm words
+    confirmWords: ['확인', '진행', '네', '전부', '만들어', '좋아', 'ok', 'yes'],
+  },
+  en: {
+    appDescription: 'AI automatically analyzes settlement files from Coupang, Naver, and Gmarket',
+
+    landingSubtitle: 'Upload settlement files and AI will automatically map and analyze them',
+    templateRevenue: 'Revenue Analysis',
+    templateRevenueDesc: 'Revenue overview by platform',
+    templateFees: 'Fee Comparison',
+    templateFeesDesc: 'Compare fee rates across platforms',
+    templateProduct: 'Product Profitability',
+    templateProductDesc: 'Margin analysis by product',
+    templateTrend: 'Trend Analysis',
+    templateTrendDesc: 'Revenue trends over time',
+    orDivider: 'or',
+    uploadHint: 'Attach your settlement files to analyze real data',
+    downloadSample: 'Download Sample Settlement Files',
+    sampleCoupang: 'Coupang Sample',
+    sampleNaver: 'SmartStore Sample',
+    sampleGmarket: 'Gmarket Sample',
+
+    inputPlaceholder: 'Type a message or attach a file...',
+    ariaAttach: 'Attach file',
+    ariaSend: 'Send',
+
+    fileMetaRows: 'rows',
+    fileMetaCols: 'cols',
+    mappingSourceCol: 'Source Column',
+    mappingTargetField: 'Target Field',
+    mappingConfidence: 'Confidence',
+    insightHeader: 'AI-Discovered Insights',
+
+    fileDuplicate: (name: string) => `${name} has already been uploaded.`,
+    fileAttached: (name: string) => `File attached: ${name}`,
+    stepEncoding: 'Detecting file encoding...',
+    stepPlatform: 'Detecting platform...',
+    stepFingerprint: 'Generating column fingerprint...',
+    stepMapping: 'AI is analyzing column mappings...',
+    stepTransform: 'Transforming data...',
+    stepDone: 'Dashboard ready!',
+    cacheHitMessage: 'Automatically applying previous mapping.',
+    mappingApiError: 'Mapping API call failed',
+    mappingResult: 'Here are the column mappings. Please confirm to proceed.',
+    templatePrompt: 'What analysis would you like?',
+    templateOptions: ['Revenue Analysis', 'Fee Comparison', 'Product Profitability', 'Full Analysis'],
+    fileProcessError: 'An error occurred while processing the file.',
+    analyzingData: 'Analyzing the data...',
+    noResponse: 'Unable to receive a response.',
+    errorOccurred: 'An error occurred.',
+    uploadFirst: 'Please attach a file first. Click the button or drag and drop a file.',
+    confirmButton: 'Confirm & Generate Dashboard',
+    previewMessage: 'Previewing with sample data. Attach your settlement file to analyze your own data.',
+    chipAnalysisPrompt: (text: string) => `To start "${text}" analysis, please attach a settlement file first.`,
+    sidebarTitle: 'Analysis Agent',
+    chipAddFile: 'Revenue trend analysis',
+    chipFeeCompare: 'Fee comparison',
+    chipTopProfit: 'Top 5 profitability',
+    sidebarPlaceholder: 'Ask a question or add a file...',
+
+    tabRevenue: 'Revenue',
+    tabFees: 'Fees',
+    tabProduct: 'Products',
+    tabTrend: 'Trends',
+    goBack: 'Go back',
+    previewLabel: 'Sample Data Preview',
+    analyzeMyFile: 'Analyze my file',
+
+    kpiTotalRevenue: 'Total Revenue',
+    kpiOrders: 'Orders',
+    kpiOrderUnit: 'orders',
+    kpiAvgOrder: 'Avg Order Value',
+    kpiTotalFeeRate: 'Total Fee Rate',
+    kpiSettlement: (value: string) => `Settlement ${value}`,
+
+    chartDailyRevenue: 'Daily Revenue Trend',
+    chartPlatformShare: 'Revenue Share by Platform',
+    chartNoDateData: 'No date data available to display trends',
+    chartNoData: 'No data available',
+    chartFeeFlow: 'Fee Flow (Revenue → Costs → Net Profit)',
+    chartNoFeeData: 'No fee data available',
+    chartFeeRateByPlatform: 'Fee Rate by Platform (%)',
+    chartDonutCenter: 'Revenue Share',
+    chartDailySales: 'Daily Sales',
+    chartNoTrendData: 'Not enough date data to display trends',
+    chartNoTabData: 'No data to display for this tab',
+
+    colProductName: 'Product',
+    colPlatform: 'Platform',
+    colRevenue: 'Revenue',
+    colTotalFees: 'Total Fees',
+    colFeeRate: 'Fee Rate',
+    colSettlement: 'Settlement',
+    colQuantity: 'Quantity',
+
+    platformCoupang: 'Coupang',
+    platformNaver: 'Naver',
+    platformGmarket: 'Gmarket',
+
+    sankeyCommission: 'Commission',
+    sankeyShipping: 'Shipping',
+    sankeyDiscount: 'Discount',
+    sankeyNetProfit: 'Net Profit',
+
+    currencyEok: (v: string) => `${v}B KRW`,
+    currencyMan: (v: string) => `${v}M KRW`,
+    currencyWon: (v: string) => `₩${v}`,
+
+    confirmWords: ['confirm', 'proceed', 'yes', 'ok', 'go', 'sure', 'do it'],
+  },
+};
+
+export type Translations = typeof translations['ko'];
