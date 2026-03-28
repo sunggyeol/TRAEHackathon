@@ -858,22 +858,62 @@ html, body {
 }
 
 .action-chips {
-  display: flex; gap: 0;
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
   border-top: 1px solid var(--border-subtle);
 }
 
 .action-chip {
-  flex: 1;
   background: var(--bg-base); border: none;
   border-right: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
   padding: 8px 4px;
   font-family: inherit;
   font-size: 0.6875rem; color: var(--text-secondary);
   cursor: pointer; transition: all 0.15s; text-align: center;
 
-  &:last-child { border-right: none; }
+  &:nth-child(3n) { border-right: none; }
+  &:nth-last-child(-n+3) { border-bottom: none; }
   &:hover { background: var(--accent-muted); color: var(--accent); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
 }
+
+// --- Agent Card (collapsible) ---
+.agent-card {
+  width: 100%; padding: 8px 12px;
+  background: var(--bg-surface); border: 1px solid var(--border-subtle);
+  transition: all 0.15s;
+
+  &--done { cursor: pointer; &:hover { border-color: var(--accent); background: var(--accent-muted); } }
+  &--running { opacity: 0.8; }
+
+  .agent-card-header {
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .agent-card-status { display: flex; align-items: center; flex-shrink: 0; }
+
+  .agent-card-spinner {
+    width: 14px; height: 14px; border: 2px solid var(--border-default);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .agent-card-name {
+    font-size: 0.75rem; font-weight: 600; color: var(--text-primary);
+  }
+
+  .agent-card-label {
+    font-size: 0.625rem; color: var(--text-disabled);
+  }
+
+  .agent-card-body {
+    margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-subtle);
+    font-size: 0.75rem; color: var(--text-secondary); line-height: 1.6;
+    white-space: pre-wrap;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .download-btn {
   display: inline-flex; align-items: center; gap: 8px;

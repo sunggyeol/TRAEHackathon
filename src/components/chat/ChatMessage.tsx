@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Icon } from '@blueprintjs/core';
 import type { ChatMessage as ChatMessageType, ParsedFile, ColumnMapping } from '@/types';
@@ -82,6 +83,45 @@ function MessageAvatar({ role }: { role: 'user' | 'agent' }) {
   );
 }
 
+function AgentCard({ message }: { message: ChatMessageType }) {
+  const [expanded, setExpanded] = useState(false);
+  const { agentName, agentStatus, agentResult } = message.data || {};
+  const isDone = agentStatus === 'done';
+
+  return (
+    <div className="msg-row msg-row--agent">
+      <div className="msg-avatar-spacer" />
+      <div
+        className={`agent-card ${isDone ? 'agent-card--done' : 'agent-card--running'} ${expanded ? 'agent-card--expanded' : ''}`}
+        onClick={() => isDone && setExpanded(e => !e)}
+        role={isDone ? 'button' : undefined}
+        tabIndex={isDone ? 0 : undefined}
+      >
+        <div className="agent-card-header">
+          <div className="agent-card-status">
+            {isDone
+              ? <Icon icon="tick-circle" size={14} style={{ color: 'var(--green)' }} />
+              : <span className="agent-card-spinner" />
+            }
+          </div>
+          <span className="agent-card-name">{agentName}</span>
+          <span className="agent-card-label">
+            {isDone ? '완료' : '분석 중...'}
+          </span>
+          {isDone && (
+            <Icon icon={expanded ? 'chevron-up' : 'chevron-down'} size={12} style={{ color: 'var(--text-disabled)', marginLeft: 'auto' }} />
+          )}
+        </div>
+        {expanded && agentResult && (
+          <div className="agent-card-body">
+            {agentResult}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ChatMessage({ message, onAction }: { message: ChatMessageType; onAction?: (action: string) => void }) {
   const { t } = useLanguage();
   const isUser = message.role === 'user';
@@ -158,6 +198,11 @@ export default function ChatMessage({ message, onAction }: { message: ChatMessag
         </div>
       </div>
     );
+  }
+
+  // Agent card (collapsible)
+  if (message.type === 'agent-card' && message.data?.agentName) {
+    return <AgentCard message={message} />;
   }
 
   // Download button (from unify workflow)

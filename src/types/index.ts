@@ -77,7 +77,8 @@ export type MessageType =
   | 'templates'
   | 'action'
   | 'insight'
-  | 'error';
+  | 'error'
+  | 'agent-card';
 
 export interface ChatMessage {
   id: string;
@@ -93,6 +94,9 @@ export interface ChatMessage {
     stepNumber?: number;
     totalSteps?: number;
     confidence?: number;
+    agentName?: string;
+    agentStatus?: 'running' | 'done';
+    agentResult?: string;
   };
 }
 
@@ -131,4 +135,5 @@ export type AppAction =
   | { type: 'SET_ACTIVE_TAB'; tab: number }
   | { type: 'SET_STREAMING'; streaming: boolean }
   | { type: 'SET_PREVIEW'; preview: boolean }
+  | { type: 'UPDATE_AGENT_CARD'; id: string; agentStatus: 'running' | 'done'; agentResult: string }
   | { type: 'RESET' };

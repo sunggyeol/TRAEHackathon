@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import ThemeProvider from '@/components/ThemeProvider';
 import { LanguageProvider } from '@/lib/i18n/LanguageContext';
-import TraeBadge from '@/components/TraeBadge';
+
 import './globals.scss';
 
 import "normalize.css/normalize.css";
@@ -24,7 +24,7 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>{children}</LanguageProvider>
         </ThemeProvider>
-        <TraeBadge />
+
       </body>
     </html>
   );

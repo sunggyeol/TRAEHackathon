@@ -52,6 +52,13 @@ function reducer(state: AppState, action: AppAction): AppState {
     case 'SET_ACTIVE_TAB': return { ...state, activeTab: action.tab };
     case 'SET_STREAMING': return { ...state, isStreaming: action.streaming };
     case 'SET_PREVIEW': return { ...state, isPreview: action.preview };
+    case 'UPDATE_AGENT_CARD': return {
+      ...state,
+      messages: state.messages.map(m => m.id === action.id ? {
+        ...m,
+        data: { ...m.data, agentStatus: action.agentStatus, agentResult: action.agentResult },
+      } : m),
+    };
     case 'RESET': return initialState;
     default: return state;
   }
@@ -494,6 +501,7 @@ export default function SalesLensApp() {
     // Agent state tracking
     const agentTexts: Record<string, string> = {};
     const agentMsgIds: Record<string, string> = {};
+    const agentNames: Record<string, string> = {};
     let synthMsgId = '';
     let synthText = '';
 
@@ -516,21 +524,28 @@ export default function SalesLensApp() {
           const evt = JSON.parse(raw);
 
           if (evt.type === 'orchestrator') {
-            dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'step', `${evt.agentCount}개 전문 에이전트 디스패치 중...`, { stepNumber: 1, totalSteps: evt.agentCount + 1 }) });
+            dispatch({ type: 'ADD_MESSAGE', message: createMessage('agent', 'step', `${evt.agentCount}개 에이전트가 데이터를 분석합니다`, { stepNumber: 1, totalSteps: evt.agentCount + 1 }) });
           } else if (evt.type === 'agent-start') {
             const msgId = `agent-${evt.agentId}-${Date.now()}`;
             agentMsgIds[evt.agentId] = msgId;
             agentTexts[evt.agentId] = '';
-            dispatch({ type: 'ADD_MESSAGE', message: { id: msgId, role: 'agent', type: 'text', content: `**${evt.name}** 분석 중...`, timestamp: Date.now() } });
+            agentNames[evt.agentId] = evt.name;
+            dispatch({ type: 'ADD_MESSAGE', message: {
+              id: msgId, role: 'agent', type: 'agent-card', content: '',
+              timestamp: Date.now(),
+              data: { agentName: evt.name, agentStatus: 'running', agentResult: '' },
+            }});
           } else if (evt.type === 'agent-delta') {
             agentTexts[evt.agentId] = (agentTexts[evt.agentId] || '') + evt.text;
+            // Don't update the visible message — just accumulate silently
+          } else if (evt.type === 'agent-done') {
             const msgId = agentMsgIds[evt.agentId];
             if (msgId) {
-              dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: agentTexts[evt.agentId] });
+              dispatch({ type: 'UPDATE_AGENT_CARD', id: msgId, agentStatus: 'done', agentResult: agentTexts[evt.agentId] || '' });
             }
           } else if (evt.type === 'synthesizer-start') {
             synthMsgId = `synth-${Date.now()}`;
-            dispatch({ type: 'ADD_MESSAGE', message: { id: synthMsgId, role: 'agent', type: 'text', content: '**종합 분석 에이전트** 결과를 통합하는 중...', timestamp: Date.now() } });
+            dispatch({ type: 'ADD_MESSAGE', message: { id: synthMsgId, role: 'agent', type: 'text', content: '종합 분석 에이전트가 결과를 통합하는 중...', timestamp: Date.now() } });
           } else if (evt.type === 'synthesizer-delta') {
             synthText += evt.text;
             if (synthMsgId) {
@@ -654,14 +669,23 @@ export default function SalesLensApp() {
             <div ref={messagesEndRef} />
           </div>
           <div className="action-chips">
-            <button className="action-chip" onClick={() => handleMultiAgent('comprehensive', 'AI 애널리스트 팀')} disabled={state.isStreaming}>
-              <Icon icon="people" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> AI 애널리스트 팀
+            <button className="action-chip" onClick={() => handleMultiAgent('comprehensive', '종합 분석 리포트')} disabled={state.isStreaming}>
+              <Icon icon="search-template" size={14} /> 종합 분석 리포트
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('optimization', 'AI 수익 시뮬레이터')} disabled={state.isStreaming}>
-              <Icon icon="rocket-slant" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> AI 수익 시뮬레이터
+            <button className="action-chip" onClick={() => handleMultiAgent('optimization', '수익 시뮬레이터')} disabled={state.isStreaming}>
+              <Icon icon="rocket-slant" size={14} /> 수익 시뮬레이터
             </button>
             <button className="action-chip" onClick={() => handleMultiAgent('unify', '데이터 내보내기')} disabled={state.isStreaming}>
-              <Icon icon="exchange" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 데이터 내보내기
+              <Icon icon="export" size={14} /> 데이터 내보내기
+            </button>
+            <button className="action-chip" onClick={() => handleMultiAgent('anomaly', '이상 거래 탐지')} disabled={state.isStreaming}>
+              <Icon icon="warning-sign" size={14} /> 이상 거래 탐지
+            </button>
+            <button className="action-chip" onClick={() => handleMultiAgent('priceHealth', '가격 경쟁력 진단')} disabled={state.isStreaming}>
+              <Icon icon="tag" size={14} /> 가격 경쟁력 진단
+            </button>
+            <button className="action-chip" onClick={() => handleMultiAgent('settlementAudit', '정산 검증')} disabled={state.isStreaming}>
+              <Icon icon="confirm" size={14} /> 정산 검증
             </button>
           </div>
           <ChatInput
