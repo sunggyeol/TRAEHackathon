@@ -502,7 +502,6 @@ export default function SalesLensApp() {
               agentTexts[evt.agentId] = (agentTexts[evt.agentId] || '') + evt.text;
               const msgId = agentMsgIds[evt.agentId];
               if (msgId) {
-                const agentName = evt.agentId.replace(/-/g, ' ');
                 dispatch({ type: 'UPDATE_MESSAGE', id: msgId, content: agentTexts[evt.agentId] });
               }
             } else if (evt.type === 'agent-done') {
