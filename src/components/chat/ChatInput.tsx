@@ -100,7 +100,7 @@ export default function ChatInput({ onSend, disabled, placeholder, compact }: Ch
               <button
                 className="staged-file-remove"
                 onClick={() => removeFile(i)}
-                aria-label={locale === 'ko' ? '제거' : 'Remove'}
+                aria-label={t.remove}
               >
                 <Icon icon="cross" size={12} />
               </button>

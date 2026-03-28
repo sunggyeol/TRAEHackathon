@@ -28,7 +28,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale);
     localStorage.setItem('saleslens-locale', newLocale);
+    document.documentElement.lang = newLocale;
   }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   return (
     <LanguageContext.Provider value={{ locale, t: translations[locale], setLocale }}>

@@ -2,6 +2,8 @@
 
 import type { UnifiedRecord } from '@/types';
 import { Icon } from '@blueprintjs/core';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
+import type { Translations } from '@/lib/i18n/translations';
 
 interface RiskDiagnosisProps {
   records: UnifiedRecord[];
@@ -18,9 +20,13 @@ interface RiskItem {
   action: string;
 }
 
-function computeRisks(records: UnifiedRecord[]): RiskItem[] {
+function getPlatformLabel(platform: string, t: Translations): string {
+  const map: Record<string, string> = { coupang: t.platformCoupang, naver: t.platformNaver, gmarket: t.platformGmarket };
+  return map[platform] || platform;
+}
+
+function computeRisks(records: UnifiedRecord[], t: Translations): RiskItem[] {
   const risks: RiskItem[] = [];
-  const total = records.length;
   const totalRevenue = records.reduce((s, r) => s + r.sales_amount, 0);
   const platforms = [...new Set(records.map(r => r.platform))];
 
@@ -29,24 +35,24 @@ function computeRisks(records: UnifiedRecord[]): RiskItem[] {
     const pRevenue = records.filter(r => r.platform === p).reduce((s, r) => s + r.sales_amount, 0);
     const share = totalRevenue > 0 ? pRevenue / totalRevenue : 0;
     if (share > 0.6) {
-      const label = { coupang: '쿠팡', naver: '네이버', gmarket: '지마켓' }[p] || p;
+      const label = getPlatformLabel(p, t);
       risks.push({
-        label: '플랫폼 집중도',
-        desc: `${label} 매출 비중이 ${(share * 100).toFixed(1)}%로 과도하게 집중되어 있습니다.`,
+        label: t.riskPlatformConcentrationLabel,
+        desc: t.riskPlatformConcentrationDesc(label, (share * 100).toFixed(1)),
         severity: share > 0.8 ? 'high' : 'medium',
         value: `${(share * 100).toFixed(0)}%`,
-        action: '다른 플랫폼 매출 비중을 확대하여 리스크를 분산하세요.',
+        action: t.riskPlatformConcentrationAction,
       });
     }
   }
   if (platforms.length === 1) {
-    const label = { coupang: '쿠팡', naver: '네이버', gmarket: '지마켓' }[platforms[0]] || platforms[0];
+    const label = getPlatformLabel(platforms[0], t);
     risks.push({
-      label: '단일 플랫폼 의존',
-      desc: `${label} 단일 채널에 100% 의존하고 있습니다.`,
+      label: t.riskSinglePlatformDependenceLabel,
+      desc: t.riskSinglePlatformDependenceDesc(label),
       severity: 'high',
       value: '100%',
-      action: '최소 2개 이상의 플랫폼에 입점하여 채널 리스크를 분산하세요.',
+      action: t.riskSinglePlatformDependenceAction,
     });
   }
 
@@ -61,11 +67,11 @@ function computeRisks(records: UnifiedRecord[]): RiskItem[] {
     const top5Share = totalRevenue > 0 ? top5Rev / totalRevenue : 0;
     if (top5Share > 0.5) {
       risks.push({
-        label: '상품 집중도',
-        desc: `상위 5개 상품이 전체 매출의 ${(top5Share * 100).toFixed(1)}%를 차지합니다.`,
+        label: t.riskProductConcentrationLabel,
+        desc: t.riskProductConcentrationDesc((top5Share * 100).toFixed(1)),
         severity: top5Share > 0.7 ? 'high' : 'medium',
         value: `${(top5Share * 100).toFixed(0)}%`,
-        action: '중위권 상품 육성으로 매출 포트폴리오를 다각화하세요.',
+        action: t.riskProductConcentrationAction,
       });
     }
   }
@@ -73,11 +79,11 @@ function computeRisks(records: UnifiedRecord[]): RiskItem[] {
     const topShare = totalRevenue > 0 ? sorted[0][1] / totalRevenue : 0;
     if (topShare > 0.2) {
       risks.push({
-        label: '단일 상품 의존',
-        desc: `"${sorted[0][0]}" 한 상품이 매출의 ${(topShare * 100).toFixed(1)}%를 차지합니다.`,
+        label: t.riskSingleProductDependenceLabel,
+        desc: t.riskSingleProductDependenceDesc(sorted[0][0], (topShare * 100).toFixed(1)),
         severity: topShare > 0.3 ? 'high' : 'medium',
         value: `${(topShare * 100).toFixed(0)}%`,
-        action: '해당 상품의 판매 중단 시나리오에 대한 대비책을 마련하세요.',
+        action: t.riskSingleProductDependenceAction,
       });
     }
   }
@@ -87,11 +93,11 @@ function computeRisks(records: UnifiedRecord[]): RiskItem[] {
   const avgCommRate = totalRevenue > 0 ? totalCommission / totalRevenue : 0;
   if (avgCommRate > 0.15) {
     risks.push({
-      label: '높은 수수료율',
-      desc: `평균 수수료율 ${(avgCommRate * 100).toFixed(1)}%로 마진을 압박하고 있습니다.`,
+      label: t.riskHighCommissionLabel,
+      desc: t.riskHighCommissionDesc((avgCommRate * 100).toFixed(1)),
       severity: avgCommRate > 0.2 ? 'high' : 'medium',
       value: `${(avgCommRate * 100).toFixed(1)}%`,
-      action: '수수료 협상 또는 자체 채널(자사몰) 구축을 검토하세요.',
+      action: t.riskHighCommissionAction,
     });
   }
 
@@ -108,11 +114,11 @@ function computeRisks(records: UnifiedRecord[]): RiskItem[] {
     const spread = maxM - minM;
     if (spread < 0.03) {
       risks.push({
-        label: '마진 균일성',
-        desc: `상위 상품들의 마진율이 ${(minM * 100).toFixed(1)}%~${(maxM * 100).toFixed(1)}% 범위에 밀집되어 있습니다.`,
+        label: t.riskMarginUniformityLabel,
+        desc: t.riskMarginUniformityDesc((minM * 100).toFixed(1), (maxM * 100).toFixed(1)),
         severity: 'low',
         value: `${(spread * 100).toFixed(1)}%p`,
-        action: '고마진 프리미엄 상품 도입으로 수익성 차별화를 시도하세요.',
+        action: t.riskMarginUniformityAction,
       });
     }
   }
@@ -122,22 +128,22 @@ function computeRisks(records: UnifiedRecord[]): RiskItem[] {
   const discountRate = totalRevenue > 0 ? totalDiscount / totalRevenue : 0;
   if (discountRate > 0.1) {
     risks.push({
-      label: '과도한 할인 의존',
-      desc: `할인 비율이 매출 대비 ${(discountRate * 100).toFixed(1)}%로 수익성을 잠식하고 있습니다.`,
+      label: t.riskDiscountDependencyLabel,
+      desc: t.riskDiscountDependencyDesc((discountRate * 100).toFixed(1)),
       severity: discountRate > 0.2 ? 'high' : 'medium',
       value: `${(discountRate * 100).toFixed(1)}%`,
-      action: '할인 없는 가격 경쟁력 확보 또는 할인 상한선을 설정하세요.',
+      action: t.riskDiscountDependencyAction,
     });
   }
 
   // If no risks found
   if (risks.length === 0) {
     risks.push({
-      label: '리스크 없음',
-      desc: '현재 데이터 기준으로 특별한 리스크가 탐지되지 않았습니다.',
+      label: t.riskNoneLabel,
+      desc: t.riskNoneDesc,
       severity: 'low',
-      value: '양호',
-      action: '현재 상태를 유지하면서 정기적으로 모니터링하세요.',
+      value: t.riskSeverityGood,
+      action: t.riskNoneAction,
     });
   }
 
@@ -149,18 +155,20 @@ function computeRisks(records: UnifiedRecord[]): RiskItem[] {
 }
 
 export default function RiskDiagnosis({ records, loading }: RiskDiagnosisProps) {
+  const { t } = useLanguage();
+
   if (loading || records.length === 0) {
     return (
       <div className="full-width-chart">
-        <div className="chart-title">리스크 진단</div>
+        <div className="chart-title">{t.riskDiagnosisTitle}</div>
         <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
-          데이터 없음
+          {t.riskNoData}
         </div>
       </div>
     );
   }
 
-  const risks = computeRisks(records);
+  const risks = computeRisks(records, t);
   const highCount = risks.filter(r => r.severity === 'high').length;
   const medCount = risks.filter(r => r.severity === 'medium').length;
 
@@ -171,9 +179,9 @@ export default function RiskDiagnosis({ records, loading }: RiskDiagnosisProps) 
   };
 
   const severityLabel = (s: Severity) => {
-    if (s === 'high') return '높음';
-    if (s === 'medium') return '중간';
-    return '낮음';
+    if (s === 'high') return t.riskSeverityHigh;
+    if (s === 'medium') return t.riskSeverityMedium;
+    return t.riskSeverityLow;
   };
 
   const severityColor = (s: Severity) => {
@@ -186,21 +194,21 @@ export default function RiskDiagnosis({ records, loading }: RiskDiagnosisProps) 
     <div className="data-health-dashboard">
       {/* Summary bar */}
       <div className="full-width-chart" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '24px' }}>
-        <div className="chart-title" style={{ margin: 0 }}>리스크 진단 - {records.length}건 분석</div>
+        <div className="chart-title" style={{ margin: 0 }}>{t.riskSummaryTitle(records.length, t.recordUnit)}</div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '16px', fontSize: '0.75rem' }}>
           {highCount > 0 && (
             <span style={{ color: 'var(--red)', fontWeight: 600 }}>
-              <Icon icon="error" size={12} /> 높음 {highCount}
+              <Icon icon="error" size={12} /> {t.riskSeverityHigh} {highCount}
             </span>
           )}
           {medCount > 0 && (
             <span style={{ color: 'var(--yellow)', fontWeight: 600 }}>
-              <Icon icon="warning-sign" size={12} /> 중간 {medCount}
+              <Icon icon="warning-sign" size={12} /> {t.riskSeverityMedium} {medCount}
             </span>
           )}
           {highCount === 0 && medCount === 0 && (
             <span style={{ color: 'var(--green)', fontWeight: 600 }}>
-              <Icon icon="tick-circle" size={12} /> 양호
+              <Icon icon="tick-circle" size={12} /> {t.riskSeverityGood}
             </span>
           )}
         </div>

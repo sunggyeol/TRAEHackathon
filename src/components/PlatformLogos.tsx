@@ -14,13 +14,13 @@ export function PlatformLogo({ platform, size = 12 }: { platform: string; size?:
   switch (platform) {
     case 'coupang':
     case '쿠팡':
-      return <img src="/logos/coupang.svg" alt="쿠팡" style={style} />;
+      return <img src="/logos/coupang.svg" alt="Coupang" style={style} />;
     case 'naver':
     case '네이버':
-      return <img src="/logos/naver.svg" alt="네이버" style={style} />;
+      return <img src="/logos/naver.svg" alt="Naver" style={style} />;
     case 'gmarket':
     case '지마켓':
-      return <img src="/logos/gmarket.svg" alt="지마켓" style={style} />;
+      return <img src="/logos/gmarket.svg" alt="Gmarket" style={style} />;
     default:
       return null;
   }

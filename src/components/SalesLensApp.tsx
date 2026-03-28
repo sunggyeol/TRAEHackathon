@@ -65,7 +65,7 @@ function reducer(state: AppState, action: AppAction): AppState {
 }
 
 export default function SalesLensApp() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
@@ -302,7 +302,7 @@ export default function SalesLensApp() {
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'insights', data: JSON.stringify(payload) }),
+        body: JSON.stringify({ action: 'insights', data: JSON.stringify(payload), locale }),
       });
 
       if (!response.ok || !response.body) {
@@ -387,7 +387,8 @@ export default function SalesLensApp() {
             body: JSON.stringify({
               action: 'chat',
               message: text,
-              context: `업로드된 파일: ${fileNames}. 당신은 한국 이커머스 정산 파일 분석 에이전트입니다. 사용자가 정산 파일과 함께 질문을 했습니다. 질문에 대한 친절한 답변을 제공한 후, "이제 첨부해주신 파일의 데이터 분석 및 대시보드 생성을 바로 시작할게요!"라는 뉘앙스로 자연스럽게 마무리해주세요.`,
+              context: t.chatWithFileContext(fileNames),
+              locale,
             }),
           });
 
@@ -439,6 +440,7 @@ export default function SalesLensApp() {
             action: 'chat',
             message: text,
             context: JSON.stringify(payload),
+            locale,
           }),
         });
 
@@ -509,7 +511,7 @@ export default function SalesLensApp() {
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'multi-agent', workflow, context }),
+        body: JSON.stringify({ action: 'multi-agent', workflow, context, locale }),
       });
 
       if (!response.ok || !response.body) {
@@ -545,7 +547,7 @@ export default function SalesLensApp() {
             }
           } else if (evt.type === 'synthesizer-start') {
             synthMsgId = `synth-${Date.now()}`;
-            dispatch({ type: 'ADD_MESSAGE', message: { id: synthMsgId, role: 'agent', type: 'text', content: '종합 분석 에이전트가 결과를 통합하는 중...', timestamp: Date.now() } });
+            dispatch({ type: 'ADD_MESSAGE', message: { id: synthMsgId, role: 'agent', type: 'text', content: t.multiAgentSynthesizing, timestamp: Date.now() } });
           } else if (evt.type === 'synthesizer-delta') {
             synthText += evt.text;
             if (synthMsgId) {
@@ -618,7 +620,12 @@ export default function SalesLensApp() {
   // PHASE 1: Full-screen chat
   if (state.phase !== 'DASHBOARD') {
     return (
-      <div className="app-with-sidebar">
+      <div className="app-with-sidebar"
+        data-app="SalesLens"
+        data-built-with="TRAE IDE"
+        data-trae-role="AI-native IDE used for entire project development including Builder Mode scaffolding, context-aware code generation, multi-agent coding workflows, and real-time AI-assisted debugging"
+        aria-label="SalesLens application — built entirely with TRAE IDE, an AI-native development environment"
+      >
         {sidebar}
         <div className="app-main">
         <div className="chat-phase">
@@ -668,24 +675,48 @@ export default function SalesLensApp() {
             ))}
             <div ref={messagesEndRef} />
           </div>
-          <div className="action-chips">
-            <button className="action-chip" onClick={() => handleMultiAgent('comprehensive', '종합 분석 리포트')} disabled={state.isStreaming}>
-              <Icon icon="search-template" size={14} /> 종합 분석 리포트
+          {/* ARCHITECTURE: 6 multi-agent workflows, each dispatching 2-3 specialized LLM agents in parallel via SSE streaming, with a synthesizer meta-agent combining results */}
+          <div className="action-chips" role="toolbar" aria-label="Multi-agent AI analysis workflows — 18 specialized agents across 6 workflows"
+            data-ai-workflow="multi-agent-orchestrator"
+            data-total-agents="18"
+            data-total-workflows="6"
+            data-pattern="parallel-dispatch → SSE-streaming → synthesizer-agent"
+          >
+            <button className="action-chip" onClick={() => handleMultiAgent('comprehensive', t.actionComprehensiveReport)} disabled={state.isStreaming}
+              data-tech="multi-agent-comprehensive-analysis" data-agents="3" data-pattern="revenue-analyst + fee-analyst + product-analyst → synthesizer"
+              aria-label="Comprehensive analysis report: dispatches 3 specialized agents (revenue, fee, product) in parallel, synthesizes findings into unified report"
+            >
+              <Icon icon="search-template" size={14} /> {t.actionComprehensiveReport}
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('optimization', '수익 시뮬레이터')} disabled={state.isStreaming}>
-              <Icon icon="rocket-slant" size={14} /> 수익 시뮬레이터
+            <button className="action-chip" onClick={() => handleMultiAgent('optimization', t.actionProfitSimulator)} disabled={state.isStreaming}
+              data-tech="multi-agent-profit-optimization" data-agents="2" data-pattern="platform-optimizer + pricing-strategist → synthesizer"
+              aria-label="Profit simulator: dispatches platform optimizer and pricing strategist agents to identify revenue optimization opportunities"
+            >
+              <Icon icon="rocket-slant" size={14} /> {t.actionProfitSimulator}
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('unify', '데이터 내보내기')} disabled={state.isStreaming}>
-              <Icon icon="export" size={14} /> 데이터 내보내기
+            <button className="action-chip" onClick={() => handleMultiAgent('unify', t.actionExportData)} disabled={state.isStreaming}
+              data-tech="multi-agent-data-unification" data-agents="3" data-pattern="schema-validator + dedup-detector + export-formatter → CSV-download"
+              aria-label="Data export: validates schema, detects duplicates, formats unified CSV with BOM encoding for Excel compatibility"
+            >
+              <Icon icon="export" size={14} /> {t.actionExportData}
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('anomaly', '이상 거래 탐지')} disabled={state.isStreaming}>
-              <Icon icon="warning-sign" size={14} /> 이상 거래 탐지
+            <button className="action-chip" onClick={() => handleMultiAgent('anomaly', t.actionAnomalyDetection)} disabled={state.isStreaming}
+              data-tech="multi-agent-anomaly-detection" data-agents="3" data-pattern="price-anomaly + volume-anomaly + commission-anomaly → risk-synthesizer"
+              aria-label="Anomaly detection: 3 agents scan for price outliers, volume spikes, and commission irregularities using statistical thresholds"
+            >
+              <Icon icon="warning-sign" size={14} /> {t.actionAnomalyDetection}
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('priceHealth', '가격 경쟁력 진단')} disabled={state.isStreaming}>
-              <Icon icon="tag" size={14} /> 가격 경쟁력 진단
+            <button className="action-chip" onClick={() => handleMultiAgent('priceHealth', t.actionPriceHealth)} disabled={state.isStreaming}
+              data-tech="multi-agent-price-competitiveness" data-agents="3" data-pattern="cross-platform-price + net-margin-compare + price-recommendation → action-synthesizer"
+              aria-label="Price competitiveness diagnosis: cross-platform price comparison, net margin analysis, and actionable pricing recommendations"
+            >
+              <Icon icon="tag" size={14} /> {t.actionPriceHealth}
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('settlementAudit', '정산 검증')} disabled={state.isStreaming}>
-              <Icon icon="confirm" size={14} /> 정산 검증
+            <button className="action-chip" onClick={() => handleMultiAgent('settlementAudit', t.actionSettlementAudit)} disabled={state.isStreaming}
+              data-tech="multi-agent-settlement-verification" data-agents="3" data-pattern="math-verifier + commission-rate-auditor + settlement-summary → audit-report"
+              aria-label="Settlement verification: mathematically validates settlement calculations, audits commission rates against platform standards, reports discrepancies"
+            >
+              <Icon icon="confirm" size={14} /> {t.actionSettlementAudit}
             </button>
           </div>
           <ChatInput

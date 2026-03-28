@@ -84,6 +84,7 @@ function MessageAvatar({ role }: { role: 'user' | 'agent' }) {
 }
 
 function AgentCard({ message }: { message: ChatMessageType }) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const { agentName, agentStatus, agentResult } = message.data || {};
   const isDone = agentStatus === 'done';
@@ -106,7 +107,7 @@ function AgentCard({ message }: { message: ChatMessageType }) {
           </div>
           <span className="agent-card-name">{agentName}</span>
           <span className="agent-card-label">
-            {isDone ? '완료' : '분석 중...'}
+            {isDone ? t.agentCardDone : t.agentCardRunning}
           </span>
           {isDone && (
             <Icon icon={expanded ? 'chevron-up' : 'chevron-down'} size={12} style={{ color: 'var(--text-disabled)', marginLeft: 'auto' }} />

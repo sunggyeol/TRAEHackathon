@@ -356,7 +356,7 @@ html, body {
 
 // === LAYOUT ===
 .app-container { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-.chat-phase { height: 100%; display: flex; flex-direction: column; background: var(--bg-base); }
+.chat-phase { height: 100%; display: flex; flex-direction: column; background: var(--bg-base); overflow: hidden; }
 
 // === CHAT HEADER ===
 .chat-header {
@@ -371,11 +371,12 @@ html, body {
 // === LANDING ===
 .chat-landing {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  flex: 1; gap: 28px; text-align: center;
-  padding: 0 32px; max-width: 560px; margin: 0 auto;
+  gap: 24px; text-align: center;
+  padding: 0 32px; max-width: 780px; margin: 0 auto;
+  flex: 1; overflow: hidden;
   animation: fadeIn 0.5s ease;
 
-  .landing-hero { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .landing-hero { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 
   .landing-wordmark {
     font-size: 1.75rem; font-weight: 300; letter-spacing: -0.04em; color: var(--text-primary);
@@ -454,6 +455,71 @@ html, body {
     display: flex; align-items: center; gap: 12px; width: 100%;
     color: var(--text-disabled); font-size: 0.6875rem;
     &::before, &::after { content: ''; flex: 1; height: 1px; background: var(--border-subtle); }
+  }
+
+  // How it works pipeline
+  .landing-how-it-works {
+    display: flex; flex-direction: column; gap: 8px; width: 100%;
+  }
+
+  .how-it-works-steps {
+    display: flex; gap: 1px; background: var(--border-subtle);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .hiw-step {
+    flex: 1; background: var(--bg-base); padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 6px; position: relative;
+
+    .hiw-step-number {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.625rem; font-weight: 600; color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+
+    .hiw-step-content { display: flex; flex-direction: column; gap: 4px; }
+
+    .hiw-step-title {
+      font-size: 0.75rem; font-weight: 600; color: var(--text-primary);
+    }
+
+    .hiw-step-desc {
+      font-size: 0.625rem; color: var(--text-tertiary); line-height: 1.5;
+    }
+
+    .hiw-step-tech {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.5625rem; color: var(--accent); opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    .hiw-arrow {
+      position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
+      z-index: 1; color: var(--text-disabled);
+    }
+  }
+
+  // TRAE badge
+  .landing-trae-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.6875rem; color: var(--text-disabled);
+    padding: 8px 0;
+
+    .trae-label { font-weight: 400; }
+    .trae-link {
+      font-weight: 700; color: var(--text-primary); text-decoration: none;
+      letter-spacing: -0.02em;
+      &:hover { color: var(--accent); }
+    }
+    .trae-solo {
+      font-weight: 400; font-size: 0.5625rem;
+      color: var(--accent); margin-left: 2px;
+      letter-spacing: 0.06em;
+    }
+    .trae-desc {
+      font-size: 0.5625rem; color: var(--text-disabled);
+      border-left: 1px solid var(--border-subtle); padding-left: 6px;
+    }
   }
 
   .landing-upload-hint {
@@ -811,7 +877,7 @@ html, body {
 }
 
 .charts-row {
-  display: grid; grid-template-columns: 3fr 2fr;
+  display: grid; grid-template-columns: 2fr 1fr;
   gap: 1px; background: var(--border-subtle);
   border: 1px solid var(--border-subtle); margin-bottom: 20px;
 }

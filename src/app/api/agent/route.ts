@@ -4,7 +4,10 @@ import { validateMappingResponse } from '@/lib/agent/mapper';
 import { NextResponse } from 'next/server';
 
 const anthropic = new Anthropic();
-const NO_EMOJI_RULE = '이모지는 쓰지 마. 마크다운 문법(**굵게**, ##제목, |테이블| 등)도 쓰지 마. 순수 텍스트와 번호 목록(1. 2. 3.)만 써. 표 형태 데이터는 "- 항목: 값" 형식으로 정리해.';
+const NO_EMOJI_RULE_KO = '이모지는 쓰지 마. 마크다운 문법(**굵게**, ##제목, |테이블| 등)도 쓰지 마. 순수 텍스트와 번호 목록(1. 2. 3.)만 써. 표 형태 데이터는 "- 항목: 값" 형식으로 정리해.';
+const NO_EMOJI_RULE_EN = 'Do not use emojis. Do not use markdown syntax (**, ##, |tables|, etc). Use only plain text and numbered lists (1. 2. 3.). Format data items as "- item: value".';
+function getNoEmojiRule(locale?: string) { return locale === 'en' ? NO_EMOJI_RULE_EN : NO_EMOJI_RULE_KO; }
+function getLangInstruction(locale?: string) { return locale === 'en' ? '\n\nIMPORTANT: You MUST respond in English.' : ''; }
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const MODEL = process.env.ANTHROPIC_MODEL || DEFAULT_MODEL;
 const TOKEN_LIMITS = {
@@ -17,7 +20,7 @@ const TOKEN_LIMITS = {
 
 export async function POST(req: Request) {
   if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: 'ANTHROPIC_API_KEY가 설정되지 않았습니다.' }, { status: 500 });
+    return NextResponse.json({ error: 'ANTHROPIC_API_KEY is not configured.' }, { status: 500 });
   }
 
   try {
@@ -79,8 +82,8 @@ async function handleMapping(body: {
   return NextResponse.json({ mappings: validated });
 }
 
-async function handleInsightsStream(body: { data: string }) {
-  const prompt = buildInsightPrompt(body.data);
+async function handleInsightsStream(body: { data: string; locale?: string }) {
+  const prompt = buildInsightPrompt(body.data, body.locale);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -122,8 +125,18 @@ async function handleInsightsStream(body: { data: string }) {
   });
 }
 
-async function handleChatStream(body: { message: string; context?: string }) {
-  const systemPrompt = `너는 한국 이커머스 정산 데이터를 잘 아는 분석가야. 셀러가 자기 데이터를 올리고 궁금한 걸 물어보는 상황이야.
+async function handleChatStream(body: { message: string; context?: string; locale?: string }) {
+  const isEn = body.locale === 'en';
+  const systemPrompt = isEn
+    ? `You are an analyst who specializes in Korean e-commerce settlement data. A seller has uploaded their data and is asking questions.
+
+Tone guide:
+- Speak naturally, as if chatting with a fellow professional.
+- When mentioning numbers, weave them into context: "Revenue is 12M KRW, with Coupang accounting for over half."
+- When comparing platforms, highlight key differences concisely.
+- Do not use emojis. Answer in clean plain text only.
+${body.context ? `\nCurrent data:\n${body.context}` : ''}`
+    : `너는 한국 이커머스 정산 데이터를 잘 아는 분석가야. 셀러가 자기 데이터를 올리고 궁금한 걸 물어보는 상황이야.
 
 톤 가이드:
 - 실무자끼리 대화하듯 자연스럽게 말해. 딱딱한 보고서체 말고, "~네요", "~거든요", "~보여요" 같은 구어체를 써.
@@ -357,9 +370,11 @@ const SYNTH_PROMPTS: Record<string, string> = {
 톤: "총 12건에서 불일치가 발견됐고, 과소 정산 추정액은 약 67만원이에요. 쿠팡 고객센터에 이 내역을 문의하시는 게 좋겠어요" 이런 식으로. 이모지 쓰지 마. 마크다운 문법도 쓰지 마.`,
 };
 
-async function handleMultiAgent(body: { workflow: string; context: string }) {
+async function handleMultiAgent(body: { workflow: string; context: string; locale?: string }) {
   const agents = WORKFLOWS[body.workflow];
   if (!agents) return NextResponse.json({ error: 'Unknown workflow' }, { status: 400 });
+  const langInstr = getLangInstruction(body.locale);
+  const noEmoji = getNoEmojiRule(body.locale);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -376,7 +391,7 @@ async function handleMultiAgent(body: { workflow: string; context: string }) {
 
           const res = await anthropic.messages.create({
             model: MODEL, max_tokens: TOKEN_LIMITS.multiAgentWorker, stream: true,
-            system: `${agent.system}\n${NO_EMOJI_RULE}`,
+            system: `${agent.system}\n${noEmoji}${langInstr}`,
             messages: [{ role: 'user', content: agent.prompt(body.context) }],
           });
 
@@ -397,11 +412,17 @@ async function handleMultiAgent(body: { workflow: string; context: string }) {
         // Phase 2: Synthesizer combines all results
         emit({ type: 'synthesizer-start' });
 
-        const synthInput = results.map(r => `[${r.name}의 분석]\n${r.result}`).join('\n\n');
+        const synthLabel = body.locale === 'en' ? 'Analysis by' : '의 분석';
+        const synthInput = body.locale === 'en'
+          ? results.map(r => `[${synthLabel} ${r.name}]\n${r.result}`).join('\n\n')
+          : results.map(r => `[${r.name}${synthLabel}]\n${r.result}`).join('\n\n');
+        const synthUserMsg = body.locale === 'en'
+          ? `Here are the analyses from each specialist:\n\n${synthInput}\n\nPlease synthesize and summarize the findings.`
+          : `각 전문가가 분석한 내용이야:\n\n${synthInput}\n\n이걸 종합해서 최종 정리해줘.`;
         const synthRes = await anthropic.messages.create({
           model: MODEL, max_tokens: TOKEN_LIMITS.multiAgentSynth, stream: true,
-          system: `${SYNTH_PROMPTS[body.workflow] || SYNTH_PROMPTS.comprehensive}\n${NO_EMOJI_RULE}`,
-          messages: [{ role: 'user', content: `각 전문가가 분석한 내용이야:\n\n${synthInput}\n\n이걸 종합해서 최종 정리해줘.` }],
+          system: `${SYNTH_PROMPTS[body.workflow] || SYNTH_PROMPTS.comprehensive}\n${noEmoji}${langInstr}`,
+          messages: [{ role: 'user', content: synthUserMsg }],
         });
 
         for await (const ev of synthRes) {

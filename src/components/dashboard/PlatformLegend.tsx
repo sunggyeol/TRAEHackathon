@@ -1,12 +1,9 @@
 'use client';
 
 import { PlatformLogo } from '@/components/PlatformLogos';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
-const PLATFORMS = [
-  { key: 'coupang', label: '쿠팡' },
-  { key: 'naver', label: '네이버' },
-  { key: 'gmarket', label: '지마켓' },
-] as const;
+const PLATFORM_KEYS = ['coupang', 'naver', 'gmarket'] as const;
 
 const CHART_COLORS: Record<string, string> = {
   coupang: '#e88b8b',
@@ -15,9 +12,12 @@ const CHART_COLORS: Record<string, string> = {
 };
 
 export default function PlatformLegend({ platforms }: { platforms?: string[] }) {
+  const { t } = useLanguage();
+  const labelMap: Record<string, string> = { coupang: t.platformCoupang, naver: t.platformNaver, gmarket: t.platformGmarket };
+  const allPlatforms = PLATFORM_KEYS.map(key => ({ key, label: labelMap[key] }));
   const items = platforms
-    ? PLATFORMS.filter(p => platforms.includes(p.key) || platforms.includes(p.label))
-    : PLATFORMS;
+    ? allPlatforms.filter(p => platforms.includes(p.key) || platforms.includes(p.label))
+    : allPlatforms;
 
   return (
     <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginTop: '8px' }}>

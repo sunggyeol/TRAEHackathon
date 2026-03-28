@@ -95,27 +95,27 @@ export default function DataHealth({ records, loading }: DataHealthProps) {
         </div>
         
         <div className="health-list">
-          <HealthItem 
-            label="데이터 정합성" 
-            desc="필수 필드(날짜, 금액, 상품명)가 모두 포함되어 있습니다."
+          <HealthItem
+            label={t.healthDataIntegrity}
+            desc={t.healthDataIntegrityDesc}
             value={`${Math.round(((total - (missingDates + missingAmount + missingProduct)) / total) * 100)}%`}
             status={missingDates + missingAmount + missingProduct > 0 ? 'warn' : 'good'}
           />
-          <HealthItem 
-            label="중복 데이터" 
-            desc="동일한 플랫폼과 주문번호를 가진 레코드가 탐지되었습니다."
+          <HealthItem
+            label={t.healthDuplicates}
+            desc={t.healthDuplicatesDesc}
             value={duplicates}
             status={duplicates > 0 ? 'error' : 'good'}
           />
-          <HealthItem 
-            label="이상치 탐지 (가격)" 
-            desc="평균 가격의 5배를 초과하는 비정상적인 거래가 포함되어 있습니다."
+          <HealthItem
+            label={t.healthPriceOutlier}
+            desc={t.healthPriceOutlierDesc}
             value={priceOutliers}
             status={priceOutliers > 0 ? 'warn' : 'good'}
           />
-          <HealthItem 
-            label="이상치 탐지 (수량)" 
-            desc="한 번에 50개 이상 판매된 대량 주문건입니다."
+          <HealthItem
+            label={t.healthQtyOutlier}
+            desc={t.healthQtyOutlierDesc}
             value={qtyOutliers}
             status={qtyOutliers > 0 ? 'warn' : 'good'}
           />
@@ -124,29 +124,29 @@ export default function DataHealth({ records, loading }: DataHealthProps) {
 
       <div className="health-summary-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
         <div className="full-width-chart" style={{ margin: 0 }}>
-          <div className="chart-title">누락 필드 상세</div>
+          <div className="chart-title">{t.healthMissingFields}</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span>날짜 누락</span>
+              <span>{t.healthMissingDate}</span>
               <span style={{ color: missingDates > 0 ? 'var(--red)' : 'var(--text-disabled)' }}>{missingDates}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span>금액 0원</span>
+              <span>{t.healthMissingAmount}</span>
               <span style={{ color: missingAmount > 0 ? 'var(--red)' : 'var(--text-disabled)' }}>{missingAmount}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-              <span>상품명 누락</span>
+              <span>{t.healthMissingProduct}</span>
               <span style={{ color: missingProduct > 0 ? 'var(--red)' : 'var(--text-disabled)' }}>{missingProduct}</span>
             </div>
           </div>
         </div>
         <div className="full-width-chart" style={{ margin: 0 }}>
-          <div className="chart-title">분석 제언</div>
+          <div className="chart-title">{t.healthRecommendation}</div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-            {duplicates > 0 ? '• 중복 주문이 발견되었습니다. 정산액이 이중으로 합산되지 않도록 주의하세요.\n' : ''}
-            {priceOutliers > 0 ? '• 고액 거래가 포함되어 있습니다. 환불 또는 취소 여부를 확인하시기 바랍니다.\n' : ''}
-            {missingDates > 0 ? '• 날짜 정보가 없는 데이터는 추이 분석에서 제외됩니다.\n' : ''}
-            {(duplicates === 0 && priceOutliers === 0 && missingDates === 0) ? '• 데이터가 매우 깨끗합니다! 바로 분석을 진행하셔도 좋습니다.' : ''}
+            {duplicates > 0 ? `• ${t.healthDuplicateWarn}\n` : ''}
+            {priceOutliers > 0 ? `• ${t.healthPriceWarn}\n` : ''}
+            {missingDates > 0 ? `• ${t.healthDateWarn}\n` : ''}
+            {(duplicates === 0 && priceOutliers === 0 && missingDates === 0) ? `• ${t.healthClean}` : ''}
           </div>
         </div>
       </div>

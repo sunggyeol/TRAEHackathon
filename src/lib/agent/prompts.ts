@@ -50,7 +50,25 @@ ${platform ? `플랫폼 힌트: ${platform}` : ''}
 ]`;
 }
 
-export function buildInsightPrompt(summaryData: string): string {
+export function buildInsightPrompt(summaryData: string, locale?: string): string {
+  if (locale === 'en') {
+    return `Analyze this Korean e-commerce settlement data and find 3 notable insights.
+
+Data summary:
+${summaryData}
+
+Rules:
+- Include specific numbers (e.g., "Coupang commission rate 12.5%")
+- Include cross-platform comparisons
+- Respond in English
+- Keep each insight to 1-2 concise sentences
+- Do NOT use markdown syntax (**, ##, |tables|, etc). Use plain text only.
+
+Format:
+1. [First insight]
+2. [Second insight]
+3. [Third insight]`;
+  }
   return `이 한국 이커머스 정산 데이터를 분석하여 3가지 주목할 만한 인사이트를 찾아주세요.
 
 데이터 요약:
