@@ -11,6 +11,7 @@ import { detectPlatform } from '@/lib/agent/mapper';
 import { applyMapping, buildInsightPayload } from '@/lib/transform';
 import { getMockData } from '@/lib/mock/generateMockData';
 import { saveSession, generateSessionTitle, createSessionId, type DashboardSession } from '@/lib/sessions';
+import { Icon } from '@blueprintjs/core';
 import SessionSidebar from './SessionSidebar';
 import ChatMessageComp from './chat/ChatMessage';
 import ChatInput from './chat/ChatInput';
@@ -607,14 +608,14 @@ export default function SalesLensApp() {
             <div ref={messagesEndRef} />
           </div>
           <div className="action-chips">
-            <button className="action-chip" onClick={() => handleMultiAgent('comprehensive', '🔍 종합 분석')} disabled={state.isStreaming}>
-              🔍 종합 분석
+            <button className="action-chip" onClick={() => handleMultiAgent('comprehensive', '종합 분석')} disabled={state.isStreaming}>
+              <Icon icon="search-template" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 종합 분석
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('optimization', '⚡ 최적화 제안')} disabled={state.isStreaming}>
-              ⚡ 최적화 제안
+            <button className="action-chip" onClick={() => handleMultiAgent('optimization', '최적화 제안')} disabled={state.isStreaming}>
+              <Icon icon="lightbulb" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 최적화 제안
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('risk', '📊 리스크 진단')} disabled={state.isStreaming}>
-              📊 리스크 진단
+            <button className="action-chip" onClick={() => handleMultiAgent('risk', '리스크 진단')} disabled={state.isStreaming}>
+              <Icon icon="warning-sign" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 리스크 진단
             </button>
           </div>
           <ChatInput

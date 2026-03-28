@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { Upload, ChartArea, Compare, ShoppingCart, Growth, DocumentDownload } from '@carbon/icons-react';
+import { Icon } from '@blueprintjs/core';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface ChatLandingProps {
@@ -15,10 +15,10 @@ export default function ChatLanding({ onChipClick, onPreview, onFileAttach }: Ch
   const fileRef = useRef<HTMLInputElement>(null);
 
   const TEMPLATES = [
-    { label: t.templateRevenue, desc: t.templateRevenueDesc, icon: ChartArea, tab: 0 },
-    { label: t.templateFees, desc: t.templateFeesDesc, icon: Compare, tab: 1 },
-    { label: t.templateProduct, desc: t.templateProductDesc, icon: ShoppingCart, tab: 2 },
-    { label: t.templateTrend, desc: t.templateTrendDesc, icon: Growth, tab: 3 },
+    { label: t.templateRevenue, desc: t.templateRevenueDesc, icon: "chart", tab: 0 },
+    { label: t.templateFees, desc: t.templateFeesDesc, icon: "comparison", tab: 1 },
+    { label: t.templateProduct, desc: t.templateProductDesc, icon: "shopping-cart", tab: 2 },
+    { label: t.templateTrend, desc: t.templateTrendDesc, icon: "timeline-line-chart", tab: 3 },
   ];
 
   return (
@@ -33,13 +33,13 @@ export default function ChatLanding({ onChipClick, onPreview, onFileAttach }: Ch
       </div>
 
       <div className="landing-templates">
-        {TEMPLATES.map(({ label, desc, icon: Icon, tab }) => (
+        {TEMPLATES.map(({ label, desc, icon, tab }) => (
           <button
             key={label}
             className="template-preview-card"
             onClick={() => onPreview(tab)}
           >
-            <div className="tpc-icon"><Icon size={20} /></div>
+            <div className="tpc-icon"><Icon icon={icon as any} size={20} /></div>
             <div className="tpc-meta">
               <span className="tpc-label">{label}</span>
               <span className="tpc-desc">{desc}</span>
@@ -54,13 +54,13 @@ export default function ChatLanding({ onChipClick, onPreview, onFileAttach }: Ch
       <div className="landing-sample-downloads">
         <div className="sample-download-links">
           <a href="/mockdata/쿠팡_정산현황_2025Q4_2026Q1.csv" download className="sample-link">
-            <DocumentDownload size={16} /> {t.sampleCoupang}
+            <Icon icon="download" size={16} /> {t.sampleCoupang}
           </a>
           <a href="/mockdata/스마트스토어_정산내역_2025Q4_2026Q1.csv" download className="sample-link">
-            <DocumentDownload size={16} /> {t.sampleNaver}
+            <Icon icon="download" size={16} /> {t.sampleNaver}
           </a>
           <a href="/mockdata/지마켓_정산내역_2025Q4_2026Q1.xlsx" download className="sample-link">
-            <DocumentDownload size={16} /> {t.sampleGmarket}
+            <Icon icon="download" size={16} /> {t.sampleGmarket}
           </a>
         </div>
       </div>

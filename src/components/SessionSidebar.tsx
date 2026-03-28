@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Add, TrashCan, Time, SidePanelClose, SidePanelOpen } from '@carbon/icons-react';
+import { Icon } from '@blueprintjs/core';
 import type { DashboardSession } from '@/lib/sessions';
 import { getSessions, deleteSession } from '@/lib/sessions';
 
@@ -37,16 +37,19 @@ export default function SessionSidebar({ currentSessionId, onNewSession, onSelec
     e.stopPropagation();
     deleteSession(id);
     setSessions(getSessions());
+    if (id === currentSessionId) {
+      onNewSession();
+    }
   };
 
   if (collapsed) {
     return (
       <aside className="session-sidebar session-sidebar--collapsed">
         <button className="session-toggle-btn" onClick={onToggle} title="사이드바 열기">
-          <SidePanelOpen size={18} />
+          <Icon icon="menu-open" size={18} />
         </button>
         <button className="session-new-btn-icon" onClick={onNewSession} title="새 분석">
-          <Add size={18} />
+          <Icon icon="plus" size={18} />
         </button>
       </aside>
     );
@@ -56,11 +59,11 @@ export default function SessionSidebar({ currentSessionId, onNewSession, onSelec
     <aside className="session-sidebar">
       <div className="session-sidebar-header">
         <button className="session-new-btn" onClick={onNewSession} title="새 분석">
-          <Add size={16} />
+          <Icon icon="plus" size={16} />
           <span style={{ fontSize: '0.75rem' }}>새 분석</span>
         </button>
         <button className="session-toggle-btn" onClick={onToggle} title="사이드바 닫기">
-          <SidePanelClose size={16} />
+          <Icon icon="menu-closed" size={16} />
         </button>
       </div>
 
@@ -84,7 +87,7 @@ export default function SessionSidebar({ currentSessionId, onNewSession, onSelec
                 <div className="session-item-content">
                   <span className="session-item-title">{session.title}</span>
                   <span className="session-item-meta">
-                    <Time size={10} />
+                    <Icon icon="time" size={10} />
                     {timeAgo(session.updatedAt)} · {session.recordCount.toLocaleString()}건
                   </span>
                 </div>
@@ -93,7 +96,7 @@ export default function SessionSidebar({ currentSessionId, onNewSession, onSelec
                   onClick={(e) => handleDelete(e, session.id)}
                   title="삭제"
                 >
-                  <TrashCan size={12} />
+                  <Icon icon="trash" size={12} />
                 </button>
               </div>
             ))}

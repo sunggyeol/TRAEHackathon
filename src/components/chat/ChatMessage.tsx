@@ -1,22 +1,22 @@
 'use client';
 
 import ReactMarkdown from 'react-markdown';
+import { Icon } from '@blueprintjs/core';
 import type { ChatMessage as ChatMessageType, ParsedFile, ColumnMapping } from '@/types';
-import { Document, WarningAlt, Bot, UserAvatar } from '@carbon/icons-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 function FileCard({ files }: { files: ParsedFile[] }) {
   const { t } = useLanguage();
   if (!files || files.length === 0) return null;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
       {files.map((f, i) => (
         <div key={i} className="file-card">
-          <Document size={24} className="file-icon" />
+          <Icon icon="document" className="file-icon" size={20} />
           <div className="file-info">
             <div className="file-name">{f.name}</div>
             <div className="file-meta">
-              {f.encoding} · {f.rows.toLocaleString()} {t.fileMetaRows} · {f.columns.length} {t.fileMetaCols}
+              {f.rows.toLocaleString()} {t.fileMetaRows} · {f.columns.length} {t.fileMetaCols}
             </div>
           </div>
         </div>
@@ -73,20 +73,17 @@ function InsightCard({ items }: { items?: string[] }) {
 
 function MessageAvatar({ role }: { role: 'user' | 'agent' }) {
   if (role === 'user') {
-    return (
-      <div className="msg-avatar msg-avatar--user">
-        <UserAvatar size={16} />
-      </div>
-    );
+    return <div className="msg-avatar msg-avatar--user">U</div>;
   }
   return (
     <div className="msg-avatar msg-avatar--agent">
-      <Bot size={16} />
+      <Icon icon="pulse" size={14} />
     </div>
   );
 }
 
 export default function ChatMessage({ message }: { message: ChatMessageType }) {
+  const { t } = useLanguage();
   const isUser = message.role === 'user';
 
   // Step messages don't get avatar wrapper
@@ -118,9 +115,9 @@ export default function ChatMessage({ message }: { message: ChatMessageType }) {
   if (message.type === 'error') {
     return (
       <div className="msg-row msg-row--agent">
-        <div className="msg-avatar-spacer" />
-        <div className="chat-bubble--error">
-          <WarningAlt size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+        <MessageAvatar role="agent" />
+        <div className="chat-bubble chat-bubble--error">
+          <Icon icon="error" size={16} />
           {message.content}
         </div>
       </div>
@@ -130,9 +127,22 @@ export default function ChatMessage({ message }: { message: ChatMessageType }) {
   // File card
   if (message.type === 'file' && message.data?.files) {
     return (
-      <div className="msg-row msg-row--agent">
-        <MessageAvatar role="agent" />
-        <FileCard files={message.data.files} />
+      <div className="msg-row msg-row--user">
+        <div className="msg-avatar-spacer" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end', width: '100%' }}>
+          {message.data.files.map((f, i) => (
+            <div key={i} className="file-card">
+              <Icon icon="document" className="file-icon" size={20} />
+              <div className="file-info">
+                <div className="file-name">{f.name}</div>
+                <div className="file-meta">
+                  {f.rows.toLocaleString()} {t.fileMetaRows} · {f.columns.length} {t.fileMetaCols}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="msg-avatar msg-avatar--user">U</div>
       </div>
     );
   }

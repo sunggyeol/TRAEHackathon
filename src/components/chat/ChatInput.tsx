@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Attachment, SendAlt, Close, DocumentBlank, Document, TableSplit } from '@carbon/icons-react';
+import { Icon } from '@blueprintjs/core';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface ChatInputProps {
@@ -13,9 +13,9 @@ interface ChatInputProps {
 
 function getFileIcon(name: string) {
   const ext = name.toLowerCase().split('.').pop();
-  if (ext === 'xlsx' || ext === 'xls') return <Document size={16} />;
-  if (ext === 'csv') return <TableSplit size={16} />;
-  return <DocumentBlank size={16} />;
+  if (ext === 'xlsx' || ext === 'xls') return <Icon icon="document" size={16} />;
+  if (ext === 'csv') return <Icon icon="th" size={16} />;
+  return <Icon icon="blank" size={16} />;
 }
 
 function getFileColor(name: string) {
@@ -102,7 +102,7 @@ export default function ChatInput({ onSend, disabled, placeholder, compact }: Ch
                 onClick={() => removeFile(i)}
                 aria-label={locale === 'ko' ? '제거' : 'Remove'}
               >
-                <Close size={12} />
+                <Icon icon="cross" size={12} />
               </button>
             </div>
           ))}
@@ -117,7 +117,7 @@ export default function ChatInput({ onSend, disabled, placeholder, compact }: Ch
           style={{ color: disabled ? 'var(--text-disabled)' : 'var(--accent)' }}
           aria-label={t.ariaAttach}
         >
-          <Attachment size={compact ? 16 : 18} />
+          <Icon icon="paperclip" size={compact ? 16 : 18} />
         </button>
         <input
           ref={fileRef}
@@ -141,7 +141,7 @@ export default function ChatInput({ onSend, disabled, placeholder, compact }: Ch
           style={{ color: disabled || !hasContent ? 'var(--text-disabled)' : 'var(--accent)' }}
           aria-label={t.ariaSend}
         >
-          <SendAlt size={compact ? 14 : 16} />
+          <Icon icon="send-message" size={compact ? 14 : 16} />
         </button>
       </div>
     </div>
