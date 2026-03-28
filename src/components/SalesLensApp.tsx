@@ -654,17 +654,14 @@ export default function SalesLensApp() {
             <div ref={messagesEndRef} />
           </div>
           <div className="action-chips">
-            <button className="action-chip" onClick={() => handleMultiAgent('comprehensive', '종합 분석')} disabled={state.isStreaming}>
-              <Icon icon="search-template" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 종합 분석
+            <button className="action-chip" onClick={() => handleMultiAgent('comprehensive', 'AI 애널리스트 팀')} disabled={state.isStreaming}>
+              <Icon icon="people" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> AI 애널리스트 팀
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('optimization', '최적화 제안')} disabled={state.isStreaming}>
-              <Icon icon="lightbulb" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 최적화 제안
+            <button className="action-chip" onClick={() => handleMultiAgent('optimization', 'AI 수익 시뮬레이터')} disabled={state.isStreaming}>
+              <Icon icon="rocket-slant" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> AI 수익 시뮬레이터
             </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('risk', '리스크 진단')} disabled={state.isStreaming}>
-              <Icon icon="warning-sign" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 리스크 진단
-            </button>
-            <button className="action-chip" onClick={() => handleMultiAgent('unify', '통합 파일 생성')} disabled={state.isStreaming}>
-              <Icon icon="merge-columns" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 통합 파일 생성
+            <button className="action-chip" onClick={() => handleMultiAgent('unify', '데이터 내보내기')} disabled={state.isStreaming}>
+              <Icon icon="exchange" size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> 데이터 내보내기
             </button>
           </div>
           <ChatInput

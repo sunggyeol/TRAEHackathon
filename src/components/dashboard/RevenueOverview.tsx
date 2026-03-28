@@ -52,7 +52,7 @@ export default function RevenueOverview({ records, loading }: RevenueOverviewPro
         <div className="chart-title">{t.chartPlatformShare}</div>
         {donutData.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 24px)' }}>
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', overflow: 'hidden' }}>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
               <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }} className="donut-chart-wrapper">
                 <DonutChart data={donutData} options={donutOpts} />
               </div>

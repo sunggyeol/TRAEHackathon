@@ -811,14 +811,14 @@ html, body {
 }
 
 .charts-row {
-  display: grid; grid-template-columns: 2fr 1fr;
+  display: grid; grid-template-columns: 3fr 2fr;
   gap: 1px; background: var(--border-subtle);
   border: 1px solid var(--border-subtle); margin-bottom: 20px;
 }
 
 .chart-container {
   background: var(--bg-base); padding: 16px 20px;
-  min-width: 0; overflow: hidden;
+  min-width: 0;
   .chart-title { font-size: 0.6875rem; color: var(--text-tertiary); margin-bottom: 12px; font-weight: 500; }
 }
 
@@ -833,9 +833,6 @@ html, body {
   .cds--chart-holder {
     display: flex !important;
     justify-content: center !important;
-  }
-  svg.cds--chart-svg {
-    transform: translateX(10%); // Shift right to counteract legend space reservation even when disabled
   }
 }
 

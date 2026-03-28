@@ -36,7 +36,7 @@ const baseOptions = {
   points: {
     enabled: false,
   },
-  height: '300px',
+  height: '340px',
 };
 
 export function getKPIData(records: UnifiedRecord[]) {
@@ -100,7 +100,15 @@ export function getDonutOptions(locale: Locale = 'ko') {
     pie: {
       alignment: 'center'
     },
-    height: '280px',
+    canvas: {
+      padding: {
+        top: 20,
+        bottom: 20,
+        left: 20,
+        right: 20
+      }
+    },
+    height: '320px',
   };
 }
 
